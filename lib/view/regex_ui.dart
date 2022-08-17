@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../models/regex_model.dart';
 
 class RegexUI extends StatefulWidget {

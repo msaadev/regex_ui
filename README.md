@@ -1,39 +1,118 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# regex_ui
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+You can create powerfull validator fields with Regex UI  
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+## Features 
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+* beautiful UI
+* Customizable controllers
 
-## Features
+## Supported platforms
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+* Flutter iOS
+* Flutter Android
+* Flutter web
+* Flutter desktop
+* Flutter windows
+* Flutter macos
+* Flutter linux
 
-## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+## Installation
 
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+Add `regex_ui: ^0.0.1` to your `pubspec.yaml` dependencies. And import it:
 
 ```dart
-const like = 'sample';
+import 'package:regex_ui/regex_ui.dart';
 ```
 
-## Additional information
+## How to use
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Simply create a `AwesomeStepper` widget, and pass the required params and List of AwesomeStepperItem:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:regex_ui/models/regex_model.dart';
+import 'package:regex_ui/regex_ui.dart';
+
+class MyHome extends StatefulWidget {
+  const MyHome({Key? key}) : super(key: key);
+
+  @override
+  State<MyHome> createState() => _MyHomeState();
+}
+
+class _MyHomeState extends State<MyHome> {
+  late final TextEditingController textEditingController,
+      textEditingController2;
+  late final FocusNode focusNode, focusNode2;
+
+  @override
+  void initState() {
+    textEditingController = TextEditingController();
+    textEditingController2 = TextEditingController();
+    focusNode = FocusNode();
+    focusNode2 = FocusNode();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    textEditingController2.dispose();
+    focusNode.dispose();
+    focusNode2.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: textEditingController2,
+              focusNode: focusNode2,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
+            RegexUI(
+              textColorFalse: Colors.red,
+              textColorTrue: Colors.blue,
+              iconColorTrue: Colors.blue,
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
+              validate: (isValid) {
+                debugPrint('isValid $isValid');
+              },
+              boxDecoration: BoxDecoration(
+                  color: Colors.green, borderRadius: BorderRadius.circular(10)),
+              controller: textEditingController2,
+              focusNode: focusNode2,
+              regexList: [
+                RegexModel(
+                  iconFalse: Icons.delete,
+                  title: 'Password must be at least 10 character',
+                  regExp: RegExp(r'^.{10,50}$'),
+                ),
+                RegexModel(
+                    title: 'add one number',
+                    regExp: RegExp(r'^(?=.*\d)|(?=.*[^\w\s]).{1,}$')),
+                RegexModel(
+                    textColorTrue: Colors.black,
+                    title: 'add one letter',
+                    regExp: RegExp(r'^(?=.*[\D]).{1,}$')),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Screen Shots
