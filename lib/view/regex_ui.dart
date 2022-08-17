@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/regex_model.dart';
 
 class RegexUI extends StatefulWidget {
+  final Function(bool isValid)? validate;
   final TextEditingController controller;
   final FocusNode focusNode;
   final List<RegexModel> regexList;
@@ -12,22 +13,23 @@ class RegexUI extends StatefulWidget {
   final BoxDecoration? boxDecoration;
   final TextStyle? textStyle;
 
-  const RegexUI({
-    Key? key,
-    required this.controller,
-    required this.regexList,
-    required this.focusNode,
-    this.padding,
-    this.margin,
-    this.boxDecoration,
-    this.iconTrue,
-    this.iconFalse,
-    this.textColorTrue,
-    this.textColorFalse,
-    this.iconColorTrue,
-    this.iconColorFalse,
-    this.textStyle,
-  }) : super(key: key);
+  const RegexUI(
+      {Key? key,
+      required this.controller,
+      required this.regexList,
+      required this.focusNode,
+      this.padding,
+      this.margin,
+      this.boxDecoration,
+      this.iconTrue,
+      this.iconFalse,
+      this.textColorTrue,
+      this.textColorFalse,
+      this.iconColorTrue,
+      this.iconColorFalse,
+      this.textStyle,
+      this.validate})
+      : super(key: key);
 
   @override
   State<RegexUI> createState() => _RegexUIState();
@@ -44,7 +46,11 @@ class _RegexUIState extends State<RegexUI> {
     focusNode = widget.focusNode;
     controller.addListener(() {
       if (mounted) {
-        setState(() {});
+        setState(() {
+          if (widget.validate != null) {
+            widget.validate!(_check);
+          }
+        });
       }
     });
     focusNode.addListener(() {
@@ -70,35 +76,37 @@ class _RegexUIState extends State<RegexUI> {
         child: child,
       ),
       duration: const Duration(milliseconds: 300),
-      child: focusNode.hasFocus
-          ? Container(
-              padding: widget.padding,
-              margin: widget.margin,
-              decoration: widget.boxDecoration,
-              child: Column(
-                children: widget.regexList
-                    .map((e) => row(
-                        condition: e.regExp.hasMatch(controller.text),
-                        text: e.title,
-                        colorFalse:
-                            e.colorFalse ?? widget.iconColorFalse ?? Colors.red,
-                        colorTrue:
-                            e.colorTrue ?? widget.iconColorTrue ?? Colors.green,
-                        iconFalse:
-                            e.iconFalse ?? widget.iconFalse ?? Icons.clear,
-                        textColorFalse: e.textColorFalse ??
-                            widget.textColorFalse ??
-                            Colors.black,
-                        textColorTrue: e.textColorTrue ??
-                            widget.textColorTrue ??
-                            Colors.black,
-                        iconTrue: e.iconTrue ?? widget.iconTrue ?? Icons.check,
-                        textStyle: e.textStyle ?? widget.textStyle))
-                    .toList(),
-              ),
-            )
-          : const SizedBox(),
+      child: _buildChild(),
     );
+  }
+
+  Widget _buildChild() {
+    if (focusNode.hasFocus) {
+      return Container(
+        padding: widget.padding,
+        margin: widget.margin,
+        decoration: widget.boxDecoration,
+        child: Column(
+          children: widget.regexList
+              .map((e) => row(
+                  condition: e.regExp.hasMatch(controller.text),
+                  text: e.title,
+                  colorFalse:
+                      e.colorFalse ?? widget.iconColorFalse ?? Colors.red,
+                  colorTrue:
+                      e.colorTrue ?? widget.iconColorTrue ?? Colors.green,
+                  iconFalse: e.iconFalse ?? widget.iconFalse ?? Icons.clear,
+                  textColorFalse:
+                      e.textColorFalse ?? widget.textColorFalse ?? Colors.black,
+                  textColorTrue:
+                      e.textColorTrue ?? widget.textColorTrue ?? Colors.black,
+                  iconTrue: e.iconTrue ?? widget.iconTrue ?? Icons.check,
+                  textStyle: e.textStyle ?? widget.textStyle))
+              .toList(),
+        ),
+      );
+    }
+    return const SizedBox();
   }
 
   Widget row({
@@ -137,5 +145,17 @@ class _RegexUIState extends State<RegexUI> {
         ],
       ),
     );
+  }
+
+  bool get _check {
+    bool isDone = true;
+    for (var element in widget.regexList) {
+      if (!element.regExp.hasMatch(controller.text)) {
+        isDone = false;
+        break;
+      }
+    }
+
+    return isDone;
   }
 }

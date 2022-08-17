@@ -52,6 +52,9 @@ class _MyHomeState extends State<MyHome> {
               iconColorTrue: Colors.blue,
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.all(10),
+              validate: (isValid) {
+                debugPrint('isValid $isValid');
+              },
               boxDecoration: BoxDecoration(
                   color: Colors.green, borderRadius: BorderRadius.circular(10)),
               controller: textEditingController2,
