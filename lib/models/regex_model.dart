@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 class RegexModel {
   final String title;
   final RegExp regExp;
-  final IconData iconTrue, iconFalse;
-  final Color colorTrue, colorFalse;
+  final IconData? iconTrue, iconFalse;
+  final Color? colorTrue, colorFalse, textColorTrue, textColorFalse;
+  final TextStyle? textStyle;
 
   RegexModel({
     required this.title,
     required this.regExp,
-    this.iconTrue = Icons.check,
-    this.iconFalse = Icons.clear,
-    this.colorTrue = Colors.green,
-    this.colorFalse = Colors.red,
+    this.iconTrue,
+    this.iconFalse,
+    this.colorTrue,
+    this.colorFalse,
+    this.textColorTrue,
+    this.textColorFalse,
+    this.textStyle
   });
 }

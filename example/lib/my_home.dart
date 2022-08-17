@@ -37,41 +37,28 @@ class _MyHomeState extends State<MyHome> {
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
+        padding: const EdgeInsets.all(10),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: textEditingController,
-              focusNode: focusNode,
-            ),
-            ValidatorView(
-              controller: textEditingController,
-              focusNode: focusNode,
-              regexList: [
-                RegexModel(
-                    title: 'Password must be at least 6 character',
-                    regExp: RegExp(r'^.{6,50}$'),
-                    colorFalse: Colors.red,
-                    colorTrue: Colors.yellow,
-                    iconFalse: Icons.dangerous,
-                    iconTrue: Icons.abc),
-                RegexModel(
-                    title: 'Password must be at least 6 character',
-                    regExp: RegExp(r'^(?=.*\d)|(?=.*[^\w\s]).{1,}$')),
-                RegexModel(
-                    title: 'Password must be at least 6 character',
-                    regExp: RegExp(r'^(?=.*[\D]).{1,}$')),
-              ],
-            ),
-            TextField(
               controller: textEditingController2,
               focusNode: focusNode2,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
-            ValidatorView(
+            RegexUI(
+              textColorFalse: Colors.red,
+              textColorTrue: Colors.blue,
+              iconColorTrue: Colors.blue,
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
+              boxDecoration: BoxDecoration(
+                  color: Colors.green, borderRadius: BorderRadius.circular(10)),
               controller: textEditingController2,
               focusNode: focusNode2,
               regexList: [
                 RegexModel(
+                  iconFalse: Icons.delete,
                   title: 'Password must be at least 10 character',
                   regExp: RegExp(r'^.{10,50}$'),
                 ),
@@ -79,6 +66,7 @@ class _MyHomeState extends State<MyHome> {
                     title: 'add one number',
                     regExp: RegExp(r'^(?=.*\d)|(?=.*[^\w\s]).{1,}$')),
                 RegexModel(
+                    textColorTrue: Colors.black,
                     title: 'add one letter',
                     regExp: RegExp(r'^(?=.*[\D]).{1,}$')),
               ],
