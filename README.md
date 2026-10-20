@@ -27,7 +27,7 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
 
 ```yaml
 dependencies:
-  regex_ui: ^1.0.0
+  regex_ui: ^1.1.0
 ```
 
 ## Usage: password validation in Flutter
