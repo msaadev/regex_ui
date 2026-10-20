@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/msaadev/regex_ui/main/logo/logo.png" width="128" alt="regex_ui logo"></p>
+
 # regex_ui
 
 [![pub package](https://img.shields.io/pub/v/regex_ui.svg)](https://pub.dev/packages/regex_ui)

@@ -1,3 +1,7 @@
+## 1.0.1
+
+* New logo; README polish.
+
 ## 1.0.0
 
 * New design: Material 3 colors from the theme, dark mode, animated check marks and colors.
