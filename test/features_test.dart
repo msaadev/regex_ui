@@ -65,6 +65,29 @@ void main() {
     });
   });
 
+  test('ready rule lists', () {
+    bool all(List<RegexModel> rules, String v) =>
+        rules.every((r) => r.matches(v));
+    expect(all(RegexModel.passwordRules(), 'Abcdef1!'), isTrue);
+    expect(all(RegexModel.passwordRules(), 'abcdef1!'), isFalse);
+    expect(all(RegexModel.userNameRules(), 'şamil_42'), isTrue);
+    expect(all(RegexModel.userNameRules(), 'a b'), isFalse);
+    expect(all(RegexModel.emailRules(), 'a@b.co'), isTrue);
+  });
+
+  testWidgets('RegexTextField.password is complete in one line', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: Scaffold(body: RegexTextField.password())),
+    );
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.byTooltip('Show'), findsOneWidget);
+    await tester.showKeyboard(find.byType(TextFormField));
+    await tester.pumpAndSettle();
+    expect(find.text('One uppercase letter'), findsOneWidget);
+  });
+
   test('passwordStrength ranks passwords', () {
     expect(passwordStrength(''), 0);
     expect(passwordStrength('password'), 0);

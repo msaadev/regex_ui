@@ -14,6 +14,8 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
 
 ## Features of this Flutter password validator
 
+- **One line**: `RegexTextField.password()`, `.email()`, `.userName()` are ready fields with
+  sensible rules, keyboard and autofill.
 - **One widget, no boilerplate**: `RegexTextField` is the field, the rules, the strength bar and the
   show / hide password button together; it makes its own controller and focus node.
 - **Works with `Form`**: `Form.validate()` checks the same rules (`RegexModel.validator(rules)` for your own `TextFormField`).
@@ -38,7 +40,22 @@ dependencies:
 
 ## Usage: password validation in Flutter
 
-The shortest way: one widget.
+One line each: the field, its rules, the strength bar and the show / hide button.
+
+```dart
+import 'package:regex_ui/regex_ui.dart';
+
+RegexTextField.userName(),
+RegexTextField.email(),
+RegexTextField.password(),                    // 8+ chars, upper, lower, number, special
+RegexTextField.password(minLength: 12, label: 'New password'),
+```
+
+Inside a `Form`, `formKey.currentState!.validate()` checks the same rules. Pass `rules:` to any of
+them to use your own, or start from the ready lists: `RegexModel.passwordRules()`,
+`RegexModel.userNameRules()`, `RegexModel.emailRules()`.
+
+Full control:
 
 ```dart
 import 'package:regex_ui/regex_ui.dart';

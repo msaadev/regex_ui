@@ -2,6 +2,8 @@
 
 * **`RegexTextField`**: field + rules + strength bar + show / hide button in one widget; makes its own
   controller and focus node when you pass none.
+* **One-line fields**: `RegexTextField.password()`, `.email()`, `.userName()` with ready rules,
+  keyboard type and autofill; ready rule lists `RegexModel.passwordRules()`, `userNameRules()`, `emailRules()`.
 * **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.
 * **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),

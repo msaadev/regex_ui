@@ -129,6 +129,31 @@ class RegexModel {
     },
   );
 
+  /// Ready password rules: length, upper, lower, number, special character.
+  static List<RegexModel> passwordRules({int minLength = 8}) => [
+    RegexModel.minLength(minLength),
+    RegexModel.uppercase(),
+    RegexModel.lowercase(),
+    RegexModel.digit(),
+    RegexModel.special(),
+  ];
+
+  /// Ready user name rules: 3–20 letters, numbers or `_`, no spaces.
+  static List<RegexModel> userNameRules({
+    int minLength = 3,
+    int maxLength = 20,
+  }) => [
+    RegexModel.minLength(minLength),
+    RegexModel.maxLength(maxLength),
+    RegexModel(
+      title: 'Letters, numbers, _',
+      regExp: RegExp(r'^[\p{L}\p{N}_]+$', unicode: true),
+    ),
+  ];
+
+  /// Ready e-mail rules.
+  static List<RegexModel> emailRules() => [RegexModel.email()];
+
   /// Whether [value] meets this rule. Empty input never does, so nothing is
   /// ticked before the user types (e.g. `^\w*\$` or `maxLength`).
   bool matches(String value) =>

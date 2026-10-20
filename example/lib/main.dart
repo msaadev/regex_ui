@@ -11,6 +11,8 @@ class ExampleApp extends StatefulWidget {
 }
 
 class _ExampleAppState extends State<ExampleApp> {
+  static const _fields = InputDecorationTheme(border: OutlineInputBorder());
+
   ThemeMode _mode = ThemeMode.system;
 
   @override
@@ -20,8 +22,12 @@ class _ExampleAppState extends State<ExampleApp> {
       title: 'Regex UI',
       debugShowCheckedModeBanner: false,
       themeMode: _mode,
-      theme: ThemeData(colorSchemeSeed: seed),
-      darkTheme: ThemeData(colorSchemeSeed: seed, brightness: Brightness.dark),
+      theme: ThemeData(colorSchemeSeed: seed, inputDecorationTheme: _fields),
+      darkTheme: ThemeData(
+        colorSchemeSeed: seed,
+        brightness: Brightness.dark,
+        inputDecorationTheme: _fields,
+      ),
       home: SignUpPage(onToggleTheme: _toggleTheme),
     );
   }
@@ -44,7 +50,6 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _userName = TextEditingController();
-  final _email = TextEditingController();
   final _password = TextEditingController();
   final _valid = <String, bool>{};
 
@@ -53,7 +58,6 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   void dispose() {
     _userName.dispose();
-    _email.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -77,45 +81,18 @@ class _SignUpPageState extends State<SignUpPage> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              _buildField(_userName, 'User name'),
-              RegexUI(
+              RegexTextField.userName(
                 controller: _userName,
-                style: RegexUIStyle.chips,
                 validate: (ok) => _setValid('user', ok),
-                regexList: [
-                  RegexModel.minLength(3),
-                  RegexModel.noSpaces(),
-                  RegexModel(
-                    title: 'Letters, numbers, _',
-                    regExp: RegExp(r'^\w*$'),
-                  ),
-                ],
               ),
               const SizedBox(height: 24),
-              _buildField(_email, 'E-mail'),
-              RegexUI(
-                controller: _email,
-                style: RegexUIStyle.chips,
-                validate: (ok) => _setValid('email', ok),
-                regexList: [RegexModel.email()],
-              ),
+              RegexTextField.email(validate: (ok) => _setValid('email', ok)),
               const SizedBox(height: 24),
-              RegexTextField(
+              RegexTextField.password(
                 controller: _password,
-                obscureText: true,
-                showStrength: true,
-                strengthMode: RegexUIStrength.password,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
                 validate: (ok) => _setValid('password', ok),
                 rules: [
-                  RegexModel.minLength(8),
-                  RegexModel.uppercase(),
-                  RegexModel.lowercase(),
-                  RegexModel.digit(),
-                  RegexModel.special(),
+                  ...RegexModel.passwordRules(),
                   RegexModel.noRepeating(),
                   RegexModel.notContains(() => _userName.text),
                 ],
@@ -123,10 +100,7 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 24),
               RegexTextField(
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Repeat password',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: 'Repeat password'),
                 validate: (ok) => _setValid('repeat', ok),
                 rules: [RegexModel.sameAs(_password)],
               ),
@@ -139,16 +113,6 @@ class _SignUpPageState extends State<SignUpPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildField(TextEditingController controller, String label) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
       ),
     );
   }

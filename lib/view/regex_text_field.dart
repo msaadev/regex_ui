@@ -73,6 +73,78 @@ class RegexTextField extends StatefulWidget {
     this.hideLabel = 'Hide',
   });
 
+  /// A password field in one line: hidden text with a show / hide button,
+  /// [RegexModel.passwordRules] and a real strength bar with labels.
+  /// Pass [rules] to replace the default rules.
+  RegexTextField.password({
+    super.key,
+    List<RegexModel>? rules,
+    this.controller,
+    this.focusNode,
+    this.textInputAction,
+    this.validate,
+    this.onSubmitted,
+    this.visibility = RegexUIVisibility.focus,
+    this.showLabel = 'Show',
+    this.hideLabel = 'Hide',
+    String label = 'Password',
+    int minLength = 8,
+    this.style = RegexUIStyle.list,
+    this.strengthLabels,
+  }) : rules = rules ?? RegexModel.passwordRules(minLength: minLength),
+       decoration = InputDecoration(labelText: label),
+       obscureText = true,
+       keyboardType = TextInputType.visiblePassword,
+       autofillHints = const [AutofillHints.password],
+       showStrength = true,
+       strengthMode = RegexUIStrength.password;
+
+  /// An e-mail field in one line with [RegexModel.emailRules].
+  RegexTextField.email({
+    super.key,
+    List<RegexModel>? rules,
+    this.controller,
+    this.focusNode,
+    this.textInputAction,
+    this.validate,
+    this.onSubmitted,
+    this.visibility = RegexUIVisibility.focus,
+    this.showLabel = 'Show',
+    this.hideLabel = 'Hide',
+    String label = 'E-mail',
+    this.style = RegexUIStyle.chips,
+  }) : rules = rules ?? RegexModel.emailRules(),
+       decoration = InputDecoration(labelText: label),
+       obscureText = false,
+       keyboardType = TextInputType.emailAddress,
+       autofillHints = const [AutofillHints.email],
+       showStrength = false,
+       strengthMode = RegexUIStrength.rules,
+       strengthLabels = null;
+
+  /// A user name field in one line with [RegexModel.userNameRules].
+  RegexTextField.userName({
+    super.key,
+    List<RegexModel>? rules,
+    this.controller,
+    this.focusNode,
+    this.textInputAction,
+    this.validate,
+    this.onSubmitted,
+    this.visibility = RegexUIVisibility.focus,
+    this.showLabel = 'Show',
+    this.hideLabel = 'Hide',
+    String label = 'User name',
+    this.style = RegexUIStyle.chips,
+  }) : rules = rules ?? RegexModel.userNameRules(),
+       decoration = InputDecoration(labelText: label),
+       obscureText = false,
+       keyboardType = TextInputType.text,
+       autofillHints = const [AutofillHints.username],
+       showStrength = false,
+       strengthMode = RegexUIStrength.rules,
+       strengthLabels = null;
+
   @override
   State<RegexTextField> createState() => _RegexTextFieldState();
 }
