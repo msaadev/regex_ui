@@ -167,7 +167,7 @@ for example in `main()`. Pass only what you want to change; the rest stays Engli
 ```dart
 RegexLabels.current = RegexLabels(
   minLength: (n) => '$n文字以上',
-  digit: (n) => n == 1 ? '数字を1つ' : '数字を$n つ以上',
+  digit: (n) => n == 1 ? '数字を1つ' : '数字を$nつ以上',
   only: (list) => '$listのみ',
   join: (words) => words.join('、'),
   chars: {
