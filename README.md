@@ -160,7 +160,15 @@ RegexUI(
 
 ### Your language (or your own words)
 
-Every text regex_ui writes by itself (rule titles, `RegexChar` names, "met / not met", strength
+Ready languages, one line:
+
+```dart
+RegexLabels.current = RegexLabels.tr;                          // en, tr, de, es, fr, it, pt, ja
+RegexLabels.current = RegexLabels.forLanguage('ja');           // from the device language
+RegexLabels.current = RegexLabels.tr.copyWith(show: 'Aç');     // a ready language, a few words changed
+```
+
+Your own language: every text regex_ui writes by itself (rule titles, `RegexChar` names, "met / not met", strength
 words, Show / Hide, field labels) comes from `RegexLabels`. Set it once, before the rules are built,
 for example in `main()`. Pass only what you want to change; the rest stays English.
 

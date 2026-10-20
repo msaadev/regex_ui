@@ -12,7 +12,8 @@
   `digitsOnly`, `lettersAndDigits`.
 * **`RegexLabels`**: one place for every text the package writes (rule titles, `RegexChar` names,
   screen reader words, strength words, Show / Hide, field labels). Set your language once; pass only
-  what you change. `title:` still changes a single rule.
+  what you change. Ready languages: `RegexLabels.en`, `tr`, `de`, `es`, `fr`, `it`, `pt`, `ja`,
+  `RegexLabels.forLanguage(code)`, and `copyWith` to change a few words. `title:` still changes a single rule.
 * **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.
 * **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),

@@ -155,7 +155,53 @@ void main() {
   });
 
   group('RegexLabels', () {
-    tearDown(() => RegexLabels.current = const RegexLabels());
+    tearDown(() => RegexLabels.current = RegexLabels.en);
+
+    test('ready languages, forLanguage and copyWith', () {
+      RegexLabels.current = RegexLabels.tr;
+      expect(RegexModel.minLength(8).title, 'En az 8 karakter');
+      expect(
+        RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]).title,
+        'Sadece harfler, rakamlar ve _',
+      );
+      expect(
+        RegexModel.notAllowed([RegexChar.whitespace]).title,
+        'Boşluk olmasın',
+      );
+
+      expect(RegexLabels.forLanguage('ja-JP'), same(RegexLabels.ja));
+      expect(RegexLabels.forLanguage('de_AT'), same(RegexLabels.de));
+      expect(RegexLabels.forLanguage('xx'), same(RegexLabels.en));
+
+      RegexLabels.current = RegexLabels.de.copyWith(
+        show: 'Zeigen',
+        chars: {RegexChar.digits: 'Ziffern'},
+      );
+      expect(RegexLabels.current.show, 'Zeigen');
+      expect(RegexModel.digitsOnly().title, 'Nur Ziffern');
+      expect(RegexModel.minLength(3).title, 'Mindestens 3 Zeichen');
+      expect(RegexLabels.current.char(RegexChar.letters), 'Buchstaben');
+    });
+
+    test('every ready language fills every text', () {
+      for (final labels in RegexLabels.builtIn.values) {
+        expect(labels.strength, hasLength(5));
+        for (final c in [
+          RegexChar.letters,
+          RegexChar.englishLetters,
+          RegexChar.uppercase,
+          RegexChar.lowercase,
+          RegexChar.digits,
+          RegexChar.whitespace,
+          RegexChar.special,
+        ]) {
+          expect(labels.char(c), isNotEmpty);
+          if (labels != RegexLabels.en) {
+            expect(labels.char(c), isNot(c.label), reason: '$c');
+          }
+        }
+      }
+    });
 
     test('one language for every auto title, partial overrides', () {
       RegexLabels.current = RegexLabels(
