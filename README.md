@@ -18,6 +18,8 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
   sensible rules, keyboard and autofill.
 - **One widget, no boilerplate**: `RegexTextField` is the field, the rules, the strength bar and the
   show / hide password button together; it makes its own controller and focus node.
+- **`RegexForm`**: tells you when every field is valid (enable the submit button) and re-checks
+  "repeat password" when the password changes.
 - **Works with `Form`**: `Form.validate()` checks the same rules (`RegexModel.validator(rules)` for your own `TextFormField`).
 - **Ready rules**: `minLength`, `maxLength`, `uppercase`, `lowercase`, `digit`, `special`, `noSpaces`,
   `noRepeating`, `email`, `phone`, `url`, `sameAs` (repeat password), `notContains` (no user name in the password)
@@ -53,7 +55,22 @@ RegexTextField.password(),                    // 8+ chars, upper, lower, number,
 RegexTextField.password(minLength: 12, label: 'New password'),
 ```
 
-Inside a `Form`, `formKey.currentState!.validate()` checks the same rules. Pass `rules:` to any of
+Enable the button only when every field is valid: wrap them in `RegexForm`.
+
+```dart
+RegexForm(
+  onChanged: (ok) => setState(() => canSubmit = ok),
+  child: Column(children: [
+    RegexTextField.email(),
+    RegexTextField.password(controller: password),
+    RegexTextField(rules: [RegexModel.sameAs(password)]), // follows the password
+    FilledButton(onPressed: canSubmit ? submit : null, child: const Text('Sign up')),
+  ]),
+)
+```
+
+No `setState`? Read it where you build the button: `RegexForm.isValidOf(context)`. `RegexForm` is a
+`Form`, so `formKey.currentState!.validate()` (pass `formKey:`) checks the same rules. Pass `rules:` to any of
 them to use your own, or start from the ready lists: `RegexModel.passwordRules()`,
 `RegexModel.userNameRules()`, `RegexModel.emailRules()`.
 
@@ -135,6 +152,7 @@ own title too.
 | same as the password field | `RegexModel.sameAs(passwordController)` |
 | must not contain the user name | `RegexModel.notContains(() => userName.text)` |
 | an e-mail / phone / web address | `RegexModel.email()` / `.phone()` / `.url()` |
+| a real IBAN (spaces ok, check digits) | `RegexModel.iban()` · only Turkish: `RegexModel.iban(country: 'TR')` |
 | anything else, in plain Dart | `RegexModel(title: 'Not "admin"', test: (v) => v != 'admin')` |
 
 `RegexChar` groups: `letters` (any language), `englishLetters`, `uppercase`, `lowercase`, `digits`,

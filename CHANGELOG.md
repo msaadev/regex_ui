@@ -16,6 +16,10 @@
   `RegexLabels.forLanguage(code)`, and `copyWith` to change a few words. `title:` still changes a single rule.
 * `notContains` checks every word of the source (3+ letters) and ignores accents, so the name
   "Ali-Can Yılmaz" blocks "yilmaz123". `sameAs` reads "Passwords must match".
+* **`RegexForm`**: a `Form` that knows when all its `RegexTextField`s are valid (`onChanged`,
+  `RegexForm.isValidOf(context)`, `RegexFormController`); a change in one field re-checks the others.
+* **`RegexModel.iban()`**: real IBAN check (country length + mod-97 check digits), spaces and lowercase
+  allowed, optional `country:`.
 * **Form support**: an empty field shows "Required" (`RegexLabels.required`), not the first rule;
   `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.

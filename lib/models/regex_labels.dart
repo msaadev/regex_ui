@@ -87,6 +87,7 @@ class RegexLabels {
   final String email;
   final String phone;
   final String url;
+  final String iban;
   final String sameAs;
 
   /// Form error of an empty field (the checklist shows the rules instead).
@@ -129,6 +130,7 @@ class RegexLabels {
     this.email = 'Valid e-mail address',
     this.phone = 'Valid phone number',
     this.url = 'Valid web address',
+    this.iban = 'Valid IBAN',
     this.sameAs = 'Passwords must match',
     this.required = 'Required',
     this.notContains = 'Does not contain your name',
@@ -166,6 +168,7 @@ class RegexLabels {
     String? email,
     String? phone,
     String? url,
+    String? iban,
     String? sameAs,
     String? required,
     String? notContains,
@@ -200,6 +203,7 @@ class RegexLabels {
     email: email ?? this.email,
     phone: phone ?? this.phone,
     url: url ?? this.url,
+    iban: iban ?? this.iban,
     sameAs: sameAs ?? this.sameAs,
     required: required ?? this.required,
     notContains: notContains ?? this.notContains,

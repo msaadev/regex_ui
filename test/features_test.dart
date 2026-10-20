@@ -57,6 +57,22 @@ void main() {
       expect(RegexModel.phone().matches('call me'), isFalse);
     });
 
+    test('iban', () {
+      final iban = RegexModel.iban();
+      expect(iban.matches('TR330006100519786457841326'), isTrue);
+      expect(iban.matches('TR33 0006 1005 1978 6457 8413 26'), isTrue);
+      expect(iban.matches('tr33 0006 1005 1978 6457 8413 26'), isTrue);
+      expect(iban.matches('TR330006100519786457841327'), isFalse); // checksum
+      expect(iban.matches('TR33000610051978645784132'), isFalse); // length
+      expect(iban.matches('DE89 3704 0044 0532 0130 00'), isTrue);
+      expect(iban.matches('GB82 WEST 1234 5698 7654 32'), isTrue);
+      expect(
+        RegexModel.iban(country: 'TR').matches('DE89370400440532013000'),
+        isFalse,
+      );
+      expect(iban.matches('hello'), isFalse);
+    });
+
     test('url', () {
       expect(RegexModel.url().matches('https://monsware.com/x'), isTrue);
       expect(RegexModel.url().matches('ftp://monsware.com'), isFalse);
@@ -317,5 +333,56 @@ void main() {
     await tester.pumpAndSettle();
     expect(form.currentState!.validate(), isTrue);
     expect(find.text('Strong'), findsOneWidget);
+  });
+
+  testWidgets('RegexForm knows when every field is valid', (tester) async {
+    final changes = <bool>[];
+    final password = TextEditingController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RegexForm(
+            onChanged: changes.add,
+            child: Column(
+              children: [
+                RegexTextField.email(),
+                RegexTextField.password(
+                  controller: password,
+                  rules: [RegexModel.minLength(4)],
+                ),
+                RegexTextField(
+                  visibility: RegexUIVisibility.always,
+                  rules: [RegexModel.sameAs(password)],
+                ),
+                Builder(
+                  builder: (context) => FilledButton(
+                    onPressed: RegexForm.isValidOf(context) ? () {} : null,
+                    child: const Text('Send'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    FilledButton button() => tester.widget(find.byType(FilledButton));
+    final inputs = find.byType(TextFormField);
+
+    expect(button().onPressed, isNull);
+    await tester.enterText(inputs.at(0), 'a@b.co');
+    await tester.enterText(inputs.at(1), 'abcd');
+    await tester.enterText(inputs.at(2), 'abcd');
+    await tester.pump();
+    expect(button().onPressed, isNotNull);
+    expect(changes, [true]);
+
+    // Changing the password makes "repeat" invalid without touching it.
+    await tester.enterText(inputs.at(1), 'abcde');
+    await tester.pumpAndSettle();
+    expect(button().onPressed, isNull);
+    expect(changes, [true, false]);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 }

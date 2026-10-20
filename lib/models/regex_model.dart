@@ -299,6 +299,87 @@ class RegexModel {
     },
   );
 
+  /// A valid IBAN: country length and check digits (mod 97). Spaces and
+  /// lowercase are fine, as people paste "TR33 0006 1005 …". Pass [country]
+  /// (e.g. 'TR') to accept only that country.
+  factory RegexModel.iban({String? country, String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.iban,
+    test: (value) => _isIban(value, country),
+  );
+
+  static bool _isIban(String value, String? country) {
+    final iban = value.replaceAll(RegExp(r'\s'), '').toUpperCase();
+    if (!RegExp(r'^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$').hasMatch(iban)) return false;
+    final code = iban.substring(0, 2);
+    if (country != null && code != country.toUpperCase()) return false;
+    final length = _ibanLengths[code];
+    if (length != null && iban.length != length) return false;
+    var rest = 0;
+    for (final r in (iban.substring(4) + iban.substring(0, 4)).runes) {
+      final n = r < 65 ? r - 48 : r - 55; // 0–9 → 0–9, A–Z → 10–35
+      rest = (n > 9 ? rest * 100 + n : rest * 10 + n) % 97;
+    }
+    return rest == 1;
+  }
+
+  // shortcut: lengths of common IBAN countries; others get the checksum only.
+  static const _ibanLengths = {
+    'AD': 24,
+    'AE': 23,
+    'AT': 20,
+    'AZ': 28,
+    'BA': 20,
+    'BE': 16,
+    'BG': 22,
+    'BH': 22,
+    'CH': 21,
+    'CY': 28,
+    'CZ': 24,
+    'DE': 22,
+    'DK': 18,
+    'EE': 20,
+    'EG': 29,
+    'ES': 24,
+    'FI': 18,
+    'FR': 27,
+    'GB': 22,
+    'GE': 22,
+    'GR': 27,
+    'HR': 21,
+    'HU': 28,
+    'IE': 22,
+    'IL': 23,
+    'IS': 26,
+    'IT': 27,
+    'JO': 30,
+    'KW': 30,
+    'KZ': 20,
+    'LB': 28,
+    'LI': 21,
+    'LT': 20,
+    'LU': 20,
+    'LV': 21,
+    'MC': 27,
+    'ME': 22,
+    'MK': 19,
+    'MT': 31,
+    'NL': 18,
+    'NO': 15,
+    'PK': 24,
+    'PL': 28,
+    'PT': 25,
+    'QA': 29,
+    'RO': 24,
+    'RS': 22,
+    'SA': 24,
+    'SE': 24,
+    'SI': 19,
+    'SK': 24,
+    'SM': 27,
+    'TR': 26,
+    'UA': 29,
+  };
+
   /// An http or https address with a domain, e.g. https://monsware.com.
   factory RegexModel.url({String? title}) => RegexModel(
     title: title ?? RegexLabels.current.url,

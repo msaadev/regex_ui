@@ -51,9 +51,8 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final _userName = TextEditingController();
   final _password = TextEditingController();
-  final _valid = <String, bool>{};
-
-  bool get _canSubmit => _valid.length == 4 && _valid.values.every((v) => v);
+  bool _canSubmit = false;
+  String _language = 'en';
 
   @override
   void dispose() {
@@ -68,6 +67,7 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: const Text('Regex UI'),
         actions: [
+          _buildLanguageMenu(),
           IconButton(
             tooltip: 'Toggle theme',
             icon: const Icon(Icons.dark_mode_outlined),
@@ -78,48 +78,67 @@ class _SignUpPageState extends State<SignUpPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
-          child: ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              RegexTextField.userName(
-                controller: _userName,
-                validate: (ok) => _setValid('user', ok),
-              ),
-              const SizedBox(height: 24),
-              RegexTextField.email(validate: (ok) => _setValid('email', ok)),
-              const SizedBox(height: 24),
-              RegexTextField.password(
-                controller: _password,
-                validate: (ok) => _setValid('password', ok),
-                rules: [
-                  ...RegexModel.passwordRules(),
-                  RegexModel.noRepeating(),
-                  RegexModel.notContains(() => _userName.text),
-                ],
-              ),
-              const SizedBox(height: 24),
-              RegexTextField(
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Repeat password'),
-                validate: (ok) => _setValid('repeat', ok),
-                rules: [RegexModel.sameAs(_password)],
-              ),
-              const SizedBox(height: 32),
-              FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(64, 52)),
-                onPressed: _canSubmit ? _submit : null,
-                child: const Text('Create account'),
-              ),
-            ],
+          child: RegexForm(
+            onChanged: (ok) => setState(() => _canSubmit = ok),
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                RegexTextField.userName(controller: _userName),
+                const SizedBox(height: 24),
+                RegexTextField.email(),
+                const SizedBox(height: 24),
+                RegexTextField.password(
+                  controller: _password,
+                  rules: [
+                    ...RegexModel.passwordRules(),
+                    RegexModel.noRepeating(),
+                    RegexModel.notContains(() => _userName.text),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                RegexTextField(
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Repeat password',
+                  ),
+                  rules: [RegexModel.sameAs(_password)],
+                ),
+                const SizedBox(height: 24),
+                RegexTextField(
+                  decoration: const InputDecoration(labelText: 'IBAN'),
+                  style: RegexUIStyle.chips,
+                  rules: [RegexModel.iban()],
+                ),
+                const SizedBox(height: 32),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(64, 52),
+                  ),
+                  onPressed: _canSubmit ? _submit : null,
+                  child: const Text('Create account'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _setValid(String field, bool ok) {
-    if (_valid[field] == ok) return;
-    setState(() => _valid[field] = ok);
+  Widget _buildLanguageMenu() {
+    return PopupMenuButton<String>(
+      tooltip: 'Language',
+      icon: const Icon(Icons.translate),
+      initialValue: _language,
+      onSelected: (code) => setState(() {
+        _language = code;
+        RegexLabels.current = RegexLabels.forLanguage(code);
+      }),
+      itemBuilder: (_) => [
+        for (final code in RegexLabels.builtIn.keys)
+          PopupMenuItem(value: code, child: Text(code.toUpperCase())),
+      ],
+    );
   }
 
   void _submit() {
