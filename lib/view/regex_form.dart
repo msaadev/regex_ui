@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Knows whether every [RegexTextField] inside a [RegexForm] meets its rules.
+/// Knows whether every `RegexTextField` and `RegexUI` inside a [RegexForm]
+/// meets its rules.
 /// Listen to it, or read [isValid]; pass one to [RegexForm] to use it from
 /// outside the form.
 class RegexFormController extends ChangeNotifier {
@@ -40,10 +41,12 @@ class RegexFormController extends ChangeNotifier {
   }
 }
 
-/// A [Form] that knows when all its [RegexTextField]s are valid: enable the
-/// submit button with [onChanged] or [RegexForm.isValidOf]. When one field
-/// changes, the others are checked again too, so "repeat password" follows
-/// the password.
+/// A [Form] that knows when all its `RegexTextField`s and `RegexUI`s are
+/// valid: enable the submit button with [onChanged] or [RegexForm.isValidOf].
+/// When one field changes, the others are checked again too, so "repeat
+/// password" follows the password. Fields with `optional: true` may stay
+/// empty. Plain `TextFormField`s are not counted; `Form.validate()` still
+/// checks them.
 ///
 /// ```dart
 /// RegexForm(
@@ -143,7 +146,7 @@ class _RegexFormState extends State<RegexForm> {
   }
 }
 
-/// Connects [RegexTextField]s to their [RegexForm]; not for direct use.
+/// Connects `RegexUI`s to their [RegexForm]; not for direct use.
 class RegexFormScope extends InheritedNotifier<RegexFormController> {
   /// Creates the scope.
   const RegexFormScope({
@@ -157,7 +160,7 @@ class RegexFormScope extends InheritedNotifier<RegexFormController> {
       context.getInheritedWidgetOfExactType<RegexFormScope>()?.notifier;
 }
 
-/// Lets [RegexTextField] join a [RegexFormController].
+/// Lets `RegexUI` join a [RegexFormController].
 extension RegexFormFields on RegexFormController {
   /// Registers [field] with its [check]; call [leave] when it goes away.
   void join(Object field, bool Function() check) => _add(field, check);

@@ -69,6 +69,16 @@ RegexForm(
 )
 ```
 
+A field that may stay empty (a referral code, a second phone): `optional: true`. Empty is fine; once
+something is typed, the rules apply.
+
+```dart
+RegexTextField(optional: true, rules: [RegexModel.exactLength(6)])
+```
+
+Using your own `TextField` with `RegexUI`? It counts in `RegexForm` too. Plain `TextFormField`s
+without rules are not counted (`Form.validate()` still checks them).
+
 No `setState`? Read it where you build the button: `RegexForm.isValidOf(context)`. `RegexForm` is a
 `Form`, so `formKey.currentState!.validate()` (pass `formKey:`) checks the same rules. Pass `rules:` to any of
 them to use your own, or start from the ready lists: `RegexModel.passwordRules()`,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/password_strength.dart';
 import '../models/regex_labels.dart';
 import '../models/regex_model.dart';
+import 'regex_form.dart';
 
 /// When the rule list is shown.
 enum RegexUIVisibility {
@@ -83,6 +84,9 @@ class RegexUI extends StatefulWidget {
   /// none in [RegexUIStrength.rules] mode.
   final List<String>? strengthLabels;
 
+  /// May be left empty: empty counts as valid for [validate] and [RegexForm].
+  final bool optional;
+
   /// Screen reader words for a met / not met rule. Default: [RegexLabels].
   final String? metLabel, unmetLabel;
 
@@ -108,6 +112,7 @@ class RegexUI extends StatefulWidget {
     this.showStrength = false,
     this.strengthMode = RegexUIStrength.rules,
     this.strengthLabels,
+    this.optional = false,
     this.metLabel,
     this.unmetLabel,
   });
@@ -117,6 +122,8 @@ class RegexUI extends StatefulWidget {
 }
 
 class _RegexUIState extends State<RegexUI> {
+  RegexFormController? _form;
+
   bool get _visible {
     final visibility =
         widget.visibility ??
@@ -135,6 +142,17 @@ class _RegexUIState extends State<RegexUI> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final form = RegexFormScope.maybeOf(context);
+    if (form == _form) return;
+    _form?.removeListener(_onFormChanged);
+    _form?.leave(this);
+    _form = form?..join(this, _isValid);
+    _form?.addListener(_onFormChanged);
+  }
+
+  @override
   void didUpdateWidget(RegexUI oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
@@ -149,6 +167,8 @@ class _RegexUIState extends State<RegexUI> {
 
   @override
   void dispose() {
+    _form?.removeListener(_onFormChanged);
+    _form?.leave(this);
     widget.controller.removeListener(_onTextChanged);
     widget.focusNode?.removeListener(_onFocusChanged);
     super.dispose();
@@ -367,13 +387,22 @@ class _RegexUIState extends State<RegexUI> {
       widget.iconColorFalse ??
       Theme.of(context).colorScheme.outlineVariant;
 
+  bool _isValid() => RegexModel.allMet(
+    widget.regexList,
+    widget.controller.text,
+    optional: widget.optional,
+  );
+
   void _onTextChanged() {
     if (!mounted) return;
     setState(() {});
-    final valid = widget.regexList.every(
-      (rule) => rule.matches(widget.controller.text),
-    );
-    widget.validate?.call(valid);
+    widget.validate?.call(_isValid());
+    _form?.fieldChanged();
+  }
+
+  // Another field changed: rules like sameAs may have changed too.
+  void _onFormChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onFocusChanged() {

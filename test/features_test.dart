@@ -404,4 +404,79 @@ void main() {
     expect(changes, [true, false]);
     expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
+
+  testWidgets('RegexForm: optional fields may stay empty', (tester) async {
+    final changes = <bool>[];
+    final form = GlobalKey<FormState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RegexForm(
+            formKey: form,
+            onChanged: changes.add,
+            child: Column(
+              children: [
+                RegexTextField.email(
+                  controller: TextEditingController(text: 'a@b.co'),
+                ),
+                RegexTextField(
+                  optional: true,
+                  rules: [RegexModel.exactLength(6)],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(changes, [true]);
+    expect(form.currentState!.validate(), isTrue);
+
+    // Once typed, the rules apply.
+    await tester.enterText(find.byType(TextFormField).at(1), 'abc');
+    await tester.pump();
+    expect(changes, [true, false]);
+    expect(form.currentState!.validate(), isFalse);
+  });
+
+  testWidgets('RegexForm counts RegexUI with your own TextField', (
+    tester,
+  ) async {
+    final changes = <bool>[];
+    final text = TextEditingController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RegexForm(
+            onChanged: changes.add,
+            child: Column(
+              children: [
+                TextField(controller: text),
+                RegexUI(controller: text, regexList: [RegexModel.minLength(2)]),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextField), 'abc');
+    await tester.pump();
+    expect(changes, [true]);
+    await tester.enterText(find.byType(TextField), 'a');
+    await tester.pump();
+    expect(changes, [true, false]);
+  });
+
+  test('validator and allMet with optional', () {
+    final rules = [RegexModel.minLength(3)];
+    expect(RegexModel.validator(rules)(''), 'Required');
+    expect(RegexModel.validator(rules, optional: true)(''), isNull);
+    expect(
+      RegexModel.validator(rules, optional: true)('ab'),
+      'At least 3 characters',
+    );
+    expect(RegexModel.allMet(rules, '', optional: true), isTrue);
+    expect(RegexModel.allMet(rules, ''), isFalse);
+  });
 }

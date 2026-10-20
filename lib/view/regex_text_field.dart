@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/regex_labels.dart';
 import '../models/regex_model.dart';
-import 'regex_form.dart';
 import 'regex_ui.dart';
 
 /// A text field with its rule checklist, strength bar and a show / hide
@@ -31,6 +30,10 @@ class RegexTextField extends StatefulWidget {
 
   /// Called on every change with whether all rules are met.
   final ValueChanged<bool>? validate;
+
+  /// May be left empty: empty counts as valid (no "Required" error, and
+  /// [RegexForm] can still be valid); once typed, the rules apply.
+  final bool optional;
 
   /// Called when the user submits the field.
   final ValueChanged<String>? onSubmitted;
@@ -67,6 +70,7 @@ class RegexTextField extends StatefulWidget {
     this.autofillHints,
     this.validate,
     this.onSubmitted,
+    this.optional = false,
     this.visibility = RegexUIVisibility.focus,
     this.style = RegexUIStyle.list,
     this.showStrength = false,
@@ -87,6 +91,7 @@ class RegexTextField extends StatefulWidget {
     this.textInputAction,
     this.validate,
     this.onSubmitted,
+    this.optional = false,
     this.visibility = RegexUIVisibility.focus,
     this.showLabel,
     this.hideLabel,
@@ -113,6 +118,7 @@ class RegexTextField extends StatefulWidget {
     this.textInputAction,
     this.validate,
     this.onSubmitted,
+    this.optional = false,
     this.visibility = RegexUIVisibility.focus,
     this.showLabel,
     this.hideLabel,
@@ -138,6 +144,7 @@ class RegexTextField extends StatefulWidget {
     this.textInputAction,
     this.validate,
     this.onSubmitted,
+    this.optional = false,
     this.visibility = RegexUIVisibility.focus,
     this.showLabel,
     this.hideLabel,
@@ -162,7 +169,6 @@ class _RegexTextFieldState extends State<RegexTextField> {
   TextEditingController? _ownController;
   FocusNode? _ownFocusNode;
   late bool _hidden = widget.obscureText;
-  RegexFormController? _form;
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -171,39 +177,15 @@ class _RegexTextFieldState extends State<RegexTextField> {
       widget.focusNode ?? (_ownFocusNode ??= FocusNode());
 
   @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_onText);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final form = RegexFormScope.maybeOf(context);
-    if (form == _form) return;
-    _form?.removeListener(_onForm);
-    _form?.leave(this);
-    _form = form?..join(this, _isValid);
-    _form?.addListener(_onForm);
-  }
-
-  @override
   void didUpdateWidget(RegexTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.obscureText != widget.obscureText) {
       _hidden = widget.obscureText;
     }
-    if (oldWidget.controller != widget.controller) {
-      (oldWidget.controller ?? _ownController)?.removeListener(_onText);
-      _controller.addListener(_onText);
-    }
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onText);
-    _form?.removeListener(_onForm);
-    _form?.leave(this);
     _ownController?.dispose();
     _ownFocusNode?.dispose();
     super.dispose();
@@ -225,13 +207,17 @@ class _RegexTextFieldState extends State<RegexTextField> {
           textInputAction: widget.textInputAction,
           autofillHints: widget.autofillHints,
           onFieldSubmitted: widget.onSubmitted,
-          validator: RegexModel.validator(widget.rules),
+          validator: RegexModel.validator(
+            widget.rules,
+            optional: widget.optional,
+          ),
           decoration: widget.obscureText
               ? widget.decoration.copyWith(suffixIcon: _buildEye())
               : widget.decoration,
         ),
         RegexUI(
           controller: _controller,
+          optional: widget.optional,
           focusNode: _focusNode,
           regexList: widget.rules,
           validate: widget.validate,
@@ -256,14 +242,5 @@ class _RegexTextFieldState extends State<RegexTextField> {
       ),
       onPressed: () => setState(() => _hidden = !_hidden),
     );
-  }
-
-  bool _isValid() => widget.rules.every((r) => r.matches(_controller.text));
-
-  void _onText() => _form?.fieldChanged();
-
-  // Another field changed: rules like sameAs may have changed too.
-  void _onForm() {
-    if (mounted) setState(() {});
   }
 }

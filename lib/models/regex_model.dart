@@ -419,13 +419,26 @@ class RegexModel {
       value.isNotEmpty && (test?.call(value) ?? regExp!.hasMatch(value));
 
   /// A `TextFormField.validator` that returns the first unmet rule's title,
-  /// so `Form.validate()` checks the same rules as the checklist.
-  static String? Function(String?) validator(List<RegexModel> rules) =>
-      (value) {
-        if ((value ?? '').isEmpty) return RegexLabels.current.required;
-        for (final rule in rules) {
-          if (!rule.matches(value ?? '')) return rule.title;
-        }
-        return null;
-      };
+  /// so `Form.validate()` checks the same rules as the checklist. Empty is
+  /// "Required", or fine when [optional].
+  static String? Function(String?) validator(
+    List<RegexModel> rules, {
+    bool optional = false,
+  }) => (value) {
+    if ((value ?? '').isEmpty) {
+      return optional ? null : RegexLabels.current.required;
+    }
+    for (final rule in rules) {
+      if (!rule.matches(value!)) return rule.title;
+    }
+    return null;
+  };
+
+  /// Whether [value] meets every rule; empty is valid only when [optional].
+  static bool allMet(
+    List<RegexModel> rules,
+    String value, {
+    bool optional = false,
+  }) =>
+      (optional && value.isEmpty) || rules.every((rule) => rule.matches(value));
 }

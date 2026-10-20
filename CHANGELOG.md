@@ -18,6 +18,9 @@
   "Ali-Can Yılmaz" blocks "yilmaz123". `sameAs` reads "Passwords must match".
 * **`RegexForm`**: a `Form` that knows when all its `RegexTextField`s are valid (`onChanged`,
   `RegexForm.isValidOf(context)`, `RegexFormController`); a change in one field re-checks the others.
+  Counts `RegexTextField` and `RegexUI` (with your own `TextField`).
+* **`optional: true`** on `RegexTextField` and `RegexUI`: empty is valid (no "Required", the form can
+  still be valid); `RegexModel.validator(rules, optional:)`, `RegexModel.allMet`.
 * **`RegexModel.iban()`**: real IBAN check (country length + mod-97 check digits), spaces and lowercase
   allowed, optional `country:`.
 * Ready languages reviewed for each language's form wording (e.g. French "Pas d'espaces", German
