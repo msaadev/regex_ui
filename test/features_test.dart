@@ -4,6 +4,15 @@ import 'package:regex_ui/regex_ui.dart';
 
 void main() {
   group('new rules', () {
+    test('empty input meets no rule', () {
+      expect(RegexModel.maxLength(3).matches(''), isFalse);
+      expect(
+        RegexModel(title: 'w', regExp: RegExp(r'^\w*$')).matches(''),
+        isFalse,
+      );
+      expect(RegexModel(title: 't', test: (_) => true).matches(''), isFalse);
+    });
+
     test('maxLength', () {
       expect(RegexModel.maxLength(3).matches('abc'), isTrue);
       expect(RegexModel.maxLength(3).matches('abcd'), isFalse);

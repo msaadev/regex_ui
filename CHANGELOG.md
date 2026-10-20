@@ -8,6 +8,7 @@
   `noRepeating`, `phone`, `url`.
 * **Real password strength**: `passwordStrength(value)` → 0–4; `strengthMode: RegexUIStrength.password`
   drives the bar with it, and `strengthLabels` shows Very weak … Strong next to it.
+* Empty input meets no rule, so nothing is ticked before typing (e.g. `^\w*$`, `maxLength`).
 * New logo; README polish.
 
 ## 1.0.0

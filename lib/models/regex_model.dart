@@ -63,10 +63,8 @@ class RegexModel {
       );
 
   /// Contains no whitespace.
-  factory RegexModel.noSpaces({String title = 'No spaces'}) => RegexModel(
-    title: title,
-    test: (value) => value.isNotEmpty && !value.contains(RegExp(r'\s')),
-  );
+  factory RegexModel.noSpaces({String title = 'No spaces'}) =>
+      RegexModel(title: title, test: (value) => !value.contains(RegExp(r'\s')));
 
   /// Looks like an e-mail address.
   factory RegexModel.email({String title = 'Valid e-mail address'}) =>
@@ -82,10 +80,7 @@ class RegexModel {
   factory RegexModel.sameAs(
     TextEditingController other, {
     String title = 'Passwords match',
-  }) => RegexModel(
-    title: title,
-    test: (value) => value.isNotEmpty && value == other.text,
-  );
+  }) => RegexModel(title: title, test: (value) => value == other.text);
 
   /// Does not contain [text] (case-insensitive), e.g. the user name:
   /// `RegexModel.notContains(() => userName.text)`.
@@ -96,8 +91,7 @@ class RegexModel {
     title: title,
     test: (value) {
       final part = text().trim().toLowerCase();
-      return value.isNotEmpty &&
-          (part.isEmpty || !value.toLowerCase().contains(part));
+      return (part.isEmpty || !value.toLowerCase().contains(part));
     },
   );
 
@@ -107,7 +101,7 @@ class RegexModel {
     final repeat = RegExp('(.)\\1{${count - 1}}');
     return RegexModel(
       title: title ?? 'No character $count times in a row',
-      test: (value) => value.isNotEmpty && !repeat.hasMatch(value),
+      test: (value) => !repeat.hasMatch(value),
     );
   }
 
@@ -135,8 +129,10 @@ class RegexModel {
     },
   );
 
-  /// Whether [value] meets this rule.
-  bool matches(String value) => test?.call(value) ?? regExp!.hasMatch(value);
+  /// Whether [value] meets this rule. Empty input never does, so nothing is
+  /// ticked before the user types (e.g. `^\w*\$` or `maxLength`).
+  bool matches(String value) =>
+      value.isNotEmpty && (test?.call(value) ?? regExp!.hasMatch(value));
 
   /// A `TextFormField.validator` that returns the first unmet rule's title,
   /// so `Form.validate()` checks the same rules as the checklist.
