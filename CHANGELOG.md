@@ -4,6 +4,9 @@
   controller and focus node when you pass none.
 * **One-line fields**: `RegexTextField.password()`, `.email()`, `.userName()` with ready rules,
   keyboard type and autofill; ready rule lists `RegexModel.passwordRules()`, `userNameRules()`, `emailRules()`.
+* **No regex needed**: plain-word rules `lengthBetween`, `exactLength`, `lettersOnly`, `digitsOnly`,
+  `lettersAndDigits` (with `allow:` for extra characters, escaped for you), `startsWith`, `endsWith`,
+  `contains`, and `count:` on `uppercase`, `lowercase`, `digit`, `special`. README "I want… / Write" table.
 * **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.
 * **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),

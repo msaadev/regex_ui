@@ -43,24 +43,144 @@ class RegexModel {
     test: (value) => value.length >= length,
   );
 
-  /// Contains an uppercase letter (any language).
-  factory RegexModel.uppercase({String title = 'One uppercase letter'}) =>
-      RegexModel(title: title, regExp: RegExp(r'\p{Lu}', unicode: true));
+  /// Contains [count] or more uppercase letters (any language).
+  factory RegexModel.uppercase({int count = 1, String? title}) =>
+      RegexModel._atLeast(
+        count,
+        RegExp(r'\p{Lu}', unicode: true),
+        title ??
+            (count == 1
+                ? 'One uppercase letter'
+                : 'At least $count uppercase letters'),
+      );
 
-  /// Contains a lowercase letter (any language).
-  factory RegexModel.lowercase({String title = 'One lowercase letter'}) =>
-      RegexModel(title: title, regExp: RegExp(r'\p{Ll}', unicode: true));
+  /// Contains [count] or more lowercase letters (any language).
+  factory RegexModel.lowercase({int count = 1, String? title}) =>
+      RegexModel._atLeast(
+        count,
+        RegExp(r'\p{Ll}', unicode: true),
+        title ??
+            (count == 1
+                ? 'One lowercase letter'
+                : 'At least $count lowercase letters'),
+      );
 
-  /// Contains a digit.
-  factory RegexModel.digit({String title = 'One number'}) =>
-      RegexModel(title: title, regExp: RegExp(r'\d'));
+  /// Contains [count] or more digits.
+  factory RegexModel.digit({int count = 1, String? title}) =>
+      RegexModel._atLeast(
+        count,
+        RegExp(r'\d'),
+        title ?? (count == 1 ? 'One number' : 'At least $count numbers'),
+      );
 
-  /// Contains a character that is not a letter, digit or space.
-  factory RegexModel.special({String title = 'One special character'}) =>
+  /// Contains [count] or more characters that are not a letter, digit or
+  /// space.
+  factory RegexModel.special({int count = 1, String? title}) =>
+      RegexModel._atLeast(
+        count,
+        RegExp(r'[^\p{L}\p{N}\s]', unicode: true),
+        title ??
+            (count == 1
+                ? 'One special character'
+                : 'At least $count special characters'),
+      );
+
+  factory RegexModel._atLeast(int count, RegExp kind, String title) =>
       RegexModel(
         title: title,
-        regExp: RegExp(r'[^\p{L}\p{N}\s]', unicode: true),
+        test: (value) => kind.allMatches(value).length >= count,
       );
+
+  // No regex needed: rules in plain words.
+
+  /// Between [min] and [max] characters, e.g. a user name of 3–20.
+  factory RegexModel.lengthBetween(int min, int max, {String? title}) =>
+      RegexModel(
+        title: title ?? '$min to $max characters',
+        test: (value) => value.length >= min && value.length <= max,
+      );
+
+  /// Exactly [length] characters, e.g. a 6-digit code.
+  factory RegexModel.exactLength(int length, {String? title}) => RegexModel(
+    title: title ?? 'Exactly $length characters',
+    test: (value) => value.length == length,
+  );
+
+  /// Only letters (any language), plus the characters in [allow].
+  /// `RegexModel.lettersOnly(allow: ' -')` also accepts spaces and dashes.
+  factory RegexModel.lettersOnly({String allow = '', String? title}) =>
+      RegexModel._only(
+        r'\p{L}',
+        allow,
+        title ?? _onlyTitle('Only letters', allow),
+      );
+
+  /// Only digits 0–9, plus the characters in [allow].
+  factory RegexModel.digitsOnly({String allow = '', String? title}) =>
+      RegexModel._only(
+        r'0-9',
+        allow,
+        title ?? _onlyTitle('Only numbers', allow),
+      );
+
+  /// Only letters and digits, plus the characters in [allow].
+  /// `RegexModel.lettersAndDigits(allow: '_.')` for user names.
+  factory RegexModel.lettersAndDigits({String allow = '', String? title}) =>
+      RegexModel._only(
+        r'\p{L}\p{N}',
+        allow,
+        title ?? _onlyTitle('Only letters and numbers', allow),
+      );
+
+  // Characters in [allow] are escaped here, so callers never write regex.
+  factory RegexModel._only(String kinds, String allow, String title) {
+    final extra = allow
+        .split('')
+        .map((c) => '\\u{${c.runes.first.toRadixString(16)}}')
+        .join();
+    final only = RegExp('^[$kinds$extra]+\$', unicode: true);
+    return RegexModel(title: title, test: only.hasMatch);
+  }
+
+  static String _onlyTitle(String base, String allow) => allow.isEmpty
+      ? base
+      : '$base, plus: ${allow.split('').map((c) => c == ' ' ? 'space' : c).join(', ')}';
+
+  /// Starts with [text], e.g. `startsWith('TR')` for an IBAN.
+  factory RegexModel.startsWith(
+    String text, {
+    bool ignoreCase = false,
+    String? title,
+  }) => RegexModel(
+    title: title ?? 'Starts with "$text"',
+    test: (value) => ignoreCase
+        ? value.toLowerCase().startsWith(text.toLowerCase())
+        : value.startsWith(text),
+  );
+
+  /// Ends with [text], e.g. `endsWith('@company.com')`.
+  factory RegexModel.endsWith(
+    String text, {
+    bool ignoreCase = true,
+    String? title,
+  }) => RegexModel(
+    title: title ?? 'Ends with "$text"',
+    test: (value) => ignoreCase
+        ? value.toLowerCase().endsWith(text.toLowerCase())
+        : value.endsWith(text),
+  );
+
+  /// Contains [text] somewhere.
+  factory RegexModel.contains(
+    String text, {
+    bool ignoreCase = true,
+    String? title,
+  }) => RegexModel(
+    title: title ?? 'Contains "$text"',
+    test: (value) => ignoreCase
+        ? value.toLowerCase().contains(text.toLowerCase())
+        : value.contains(text),
+  );
 
   /// Contains no whitespace.
   factory RegexModel.noSpaces({String title = 'No spaces'}) =>
@@ -145,10 +265,7 @@ class RegexModel {
   }) => [
     RegexModel.minLength(minLength),
     RegexModel.maxLength(maxLength),
-    RegexModel(
-      title: 'Letters, numbers, _',
-      regExp: RegExp(r'^[\p{L}\p{N}_]+$', unicode: true),
-    ),
+    RegexModel.lettersAndDigits(allow: '_'),
   ];
 
   /// Ready e-mail rules.

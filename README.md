@@ -24,7 +24,9 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
   (letters in any language, e.g. `Ş`, `Ä`, `É`).
 - **Real password strength**: `passwordStrength(value)` scores 0–4 from length, variety, repeats,
   sequences and common passwords; the bar can show it with labels (Very weak … Strong).
-- **Your own rules**: any `RegExp`, or a `test` function.
+- **No regex needed**: rules in plain words (`digitsOnly()`, `lettersAndDigits(allow: '_')`,
+  `lengthBetween(3, 20)`, `startsWith('TR')`, `digit(count: 2)`…) with automatic titles.
+- **Your own rules**: any `RegExp`, or a `test` function in plain Dart.
 - **Password strength indicator**: a bar that fills and turns green as rules are met, or by real strength.
 - **Two styles**: a checklist (`RegexUIStyle.list`) or compact chips (`RegexUIStyle.chips`).
 - **Show on focus or always**: pass a `FocusNode` to show the rules only while typing.
@@ -105,6 +107,37 @@ RegexUI(
 )
 ```
 
+## No regex needed
+
+You don't need to know regular expressions. Say what you want in plain words; the rule writes its
+own title too.
+
+| I want… | Write |
+|---|---|
+| at least 8 characters | `RegexModel.minLength(8)` |
+| at most 20 characters | `RegexModel.maxLength(20)` |
+| 3 to 20 characters | `RegexModel.lengthBetween(3, 20)` |
+| exactly 11 characters (ID number, code) | `RegexModel.exactLength(11)` |
+| only numbers | `RegexModel.digitsOnly()` |
+| only letters, spaces and dashes allowed (names) | `RegexModel.lettersOnly(allow: ' -')` |
+| letters, numbers, `_` and `.` (user names) | `RegexModel.lettersAndDigits(allow: '_.')` |
+| at least 2 numbers | `RegexModel.digit(count: 2)` |
+| an uppercase / lowercase letter | `RegexModel.uppercase()` / `RegexModel.lowercase()` |
+| a special character like `!` or `#` | `RegexModel.special()` |
+| no spaces | `RegexModel.noSpaces()` |
+| no "aaa" | `RegexModel.noRepeating()` |
+| starts with "TR" | `RegexModel.startsWith('TR')` |
+| ends with "@company.com" | `RegexModel.endsWith('@company.com')` |
+| contains "@" | `RegexModel.contains('@')` |
+| same as the password field | `RegexModel.sameAs(passwordController)` |
+| must not contain the user name | `RegexModel.notContains(() => userName.text)` |
+| an e-mail / phone / web address | `RegexModel.email()` / `.phone()` / `.url()` |
+| anything else, in plain Dart | `RegexModel(title: 'Not "admin"', test: (v) => v != 'admin')` |
+
+Characters you pass to `allow:`, `startsWith`, `endsWith` and `contains` are used as they are:
+`-`, `.`, `]` or `\` need no escaping. Every rule takes `title:` for your own wording or language.
+Already have a regex from somewhere? `RegexModel(title: '…', regExp: RegExp(r'…'))` still works.
+
 ### User name and e-mail as chips
 
 ```dart
@@ -112,9 +145,8 @@ RegexUI(
   controller: userName,
   style: RegexUIStyle.chips,
   regexList: [
-    RegexModel.minLength(3),
-    RegexModel.noSpaces(),
-    RegexModel(title: 'Letters, numbers, _', regExp: RegExp(r'^\w*$')),
+    RegexModel.lengthBetween(3, 20),
+    RegexModel.lettersAndDigits(allow: '_'),
   ],
 )
 ```

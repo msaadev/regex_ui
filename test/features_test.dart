@@ -65,6 +65,61 @@ void main() {
     });
   });
 
+  group('no regex needed', () {
+    test('counts', () {
+      expect(RegexModel.digit(count: 2).matches('a1'), isFalse);
+      expect(RegexModel.digit(count: 2).matches('a1b2'), isTrue);
+      expect(
+        RegexModel.uppercase(count: 2).title,
+        'At least 2 uppercase letters',
+      );
+      expect(RegexModel.digit().title, 'One number');
+    });
+
+    test('length', () {
+      expect(RegexModel.lengthBetween(3, 5).matches('ab'), isFalse);
+      expect(RegexModel.lengthBetween(3, 5).matches('abcd'), isTrue);
+      expect(RegexModel.exactLength(11).matches('12345678901'), isTrue);
+      expect(RegexModel.exactLength(11).matches('1234'), isFalse);
+    });
+
+    test(
+      'only letters / digits with allowed extras, special chars escaped',
+      () {
+        expect(RegexModel.lettersOnly().matches('Şamil'), isTrue);
+        expect(RegexModel.lettersOnly().matches('Şamil Demir'), isFalse);
+        expect(
+          RegexModel.lettersOnly(allow: ' -').matches('Ali-Can Demir'),
+          isTrue,
+        );
+        expect(RegexModel.digitsOnly().matches('0532'), isTrue);
+        expect(RegexModel.digitsOnly().matches('05a'), isFalse);
+        final odd = RegexModel.lettersAndDigits(allow: r'-]\^.');
+        expect(odd.matches(r'a-b]c\d^e.f1'), isTrue);
+        expect(odd.matches('a b'), isFalse);
+        expect(odd.matches('a*b'), isFalse);
+        expect(
+          RegexModel.lettersAndDigits(allow: '_ ').title,
+          'Only letters and numbers, plus: _, space',
+        );
+      },
+    );
+
+    test('startsWith, endsWith, contains', () {
+      expect(RegexModel.startsWith('TR').matches('TR12'), isTrue);
+      expect(RegexModel.startsWith('TR').matches('tr12'), isFalse);
+      expect(
+        RegexModel.startsWith('TR', ignoreCase: true).matches('tr12'),
+        isTrue,
+      );
+      expect(
+        RegexModel.endsWith('@monsware.com').matches('a@Monsware.com'),
+        isTrue,
+      );
+      expect(RegexModel.contains('.').matches('ab'), isFalse);
+    });
+  });
+
   test('ready rule lists', () {
     bool all(List<RegexModel> rules, String v) =>
         rules.every((r) => r.matches(v));
