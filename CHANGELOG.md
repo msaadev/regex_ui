@@ -7,6 +7,9 @@
 * **No regex needed**: plain-word rules `lengthBetween`, `exactLength`, `lettersOnly`, `digitsOnly`,
   `lettersAndDigits` (with `allow:` for extra characters, escaped for you), `startsWith`, `endsWith`,
   `contains`, and `count:` on `uppercase`, `lowercase`, `digit`, `special`. README "I want… / Write" table.
+* **`RegexChar` groups**: pick characters from a list instead of writing them:
+  `RegexModel.allowOnly([...])`, `RegexModel.notAllowed([...])`, and `allowList:` on `lettersOnly`,
+  `digitsOnly`, `lettersAndDigits`.
 * **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.
 * **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),

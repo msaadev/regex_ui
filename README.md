@@ -24,7 +24,7 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
   (letters in any language, e.g. `Ş`, `Ä`, `É`).
 - **Real password strength**: `passwordStrength(value)` scores 0–4 from length, variety, repeats,
   sequences and common passwords; the bar can show it with labels (Very weak … Strong).
-- **No regex needed**: rules in plain words (`digitsOnly()`, `lettersAndDigits(allow: '_')`,
+- **No regex needed**: rules in plain words (`digitsOnly()`, `allowOnly([RegexChar.letters, RegexChar.whitespace])`,
   `lengthBetween(3, 20)`, `startsWith('TR')`, `digit(count: 2)`…) with automatic titles.
 - **Your own rules**: any `RegExp`, or a `test` function in plain Dart.
 - **Password strength indicator**: a bar that fills and turns green as rules are met, or by real strength.
@@ -119,8 +119,10 @@ own title too.
 | 3 to 20 characters | `RegexModel.lengthBetween(3, 20)` |
 | exactly 11 characters (ID number, code) | `RegexModel.exactLength(11)` |
 | only numbers | `RegexModel.digitsOnly()` |
-| only letters, spaces and dashes allowed (names) | `RegexModel.lettersOnly(allow: ' -')` |
-| letters, numbers, `_` and `.` (user names) | `RegexModel.lettersAndDigits(allow: '_.')` |
+| only letters, spaces and dashes (names) | `RegexModel.lettersOnly(allowList: [RegexChar.whitespace, RegexChar.dash])` |
+| letters, numbers, `_` and `.` (user names) | `RegexModel.lettersAndDigits(allowList: [RegexChar.underscore, RegexChar.dot])` |
+| only the groups I pick | `RegexModel.allowOnly([RegexChar.englishLetters, RegexChar.digits])` |
+| no spaces and no dots | `RegexModel.notAllowed([RegexChar.whitespace, RegexChar.dot])` |
 | at least 2 numbers | `RegexModel.digit(count: 2)` |
 | an uppercase / lowercase letter | `RegexModel.uppercase()` / `RegexModel.lowercase()` |
 | a special character like `!` or `#` | `RegexModel.special()` |
@@ -134,6 +136,11 @@ own title too.
 | an e-mail / phone / web address | `RegexModel.email()` / `.phone()` / `.url()` |
 | anything else, in plain Dart | `RegexModel(title: 'Not "admin"', test: (v) => v != 'admin')` |
 
+`RegexChar` groups: `letters` (any language), `englishLetters`, `uppercase`, `lowercase`, `digits`,
+`whitespace`, `underscore`, `dash`, `dot`, `at`, `plus`, `comma`, `apostrophe`, `slash`, `special`.
+Type `RegexChar.` and let your editor list them.
+
+For a character that is not in the list, use `allow:` with a plain string, e.g. `allow: '#'`.
 Characters you pass to `allow:`, `startsWith`, `endsWith` and `contains` are used as they are:
 `-`, `.`, `]` or `\` need no escaping. Every rule takes `title:` for your own wording or language.
 Already have a regex from somewhere? `RegexModel(title: '…', regExp: RegExp(r'…'))` still works.
@@ -146,7 +153,7 @@ RegexUI(
   style: RegexUIStyle.chips,
   regexList: [
     RegexModel.lengthBetween(3, 20),
-    RegexModel.lettersAndDigits(allow: '_'),
+    RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]),
   ],
 )
 ```

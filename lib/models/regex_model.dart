@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'regex_char.dart';
+
 /// One rule shown by `RegexUI`: a title and a check (a [RegExp] or a function).
 class RegexModel {
   /// Text shown next to the check mark, e.g. "At least 8 characters".
@@ -106,45 +108,89 @@ class RegexModel {
     test: (value) => value.length == length,
   );
 
-  /// Only letters (any language), plus the characters in [allow].
-  /// `RegexModel.lettersOnly(allow: ' -')` also accepts spaces and dashes.
-  factory RegexModel.lettersOnly({String allow = '', String? title}) =>
-      RegexModel._only(
-        r'\p{L}',
-        allow,
-        title ?? _onlyTitle('Only letters', allow),
-      );
-
-  /// Only digits 0–9, plus the characters in [allow].
-  factory RegexModel.digitsOnly({String allow = '', String? title}) =>
-      RegexModel._only(
-        r'0-9',
-        allow,
-        title ?? _onlyTitle('Only numbers', allow),
-      );
-
-  /// Only letters and digits, plus the characters in [allow].
-  /// `RegexModel.lettersAndDigits(allow: '_.')` for user names.
-  factory RegexModel.lettersAndDigits({String allow = '', String? title}) =>
-      RegexModel._only(
-        r'\p{L}\p{N}',
-        allow,
-        title ?? _onlyTitle('Only letters and numbers', allow),
-      );
-
-  // Characters in [allow] are escaped here, so callers never write regex.
-  factory RegexModel._only(String kinds, String allow, String title) {
-    final extra = allow
-        .split('')
-        .map((c) => '\\u{${c.runes.first.toRadixString(16)}}')
-        .join();
-    final only = RegExp('^[$kinds$extra]+\$', unicode: true);
-    return RegexModel(title: title, test: only.hasMatch);
+  /// Only the character groups in [chars], plus the characters in [allow]:
+  /// `RegexModel.allowOnly([RegexChar.letters, RegexChar.whitespace])`.
+  factory RegexModel.allowOnly(
+    List<RegexChar> chars, {
+    String allow = '',
+    String? title,
+  }) {
+    assert(chars.isNotEmpty || allow.isNotEmpty, 'Pass chars or allow');
+    final special = chars.contains(RegexChar.special);
+    final normal = chars.where((c) => c != RegexChar.special);
+    final cls = '[${normal.map((c) => c.pattern).join()}${_escape(allow)}]';
+    // Special = not a letter, digit or space; joined with an alternation as it is a negated class.
+    final one = special ? '(?:$cls|[${RegexChar.special.pattern}])' : cls;
+    final only = RegExp('^$one+\$', unicode: true);
+    return RegexModel(
+      title: title ?? 'Only ${_words(chars, allow)}',
+      test: only.hasMatch,
+    );
   }
 
-  static String _onlyTitle(String base, String allow) => allow.isEmpty
-      ? base
-      : '$base, plus: ${allow.split('').map((c) => c == ' ' ? 'space' : c).join(', ')}';
+  /// None of the character groups in [chars] and none of the characters in
+  /// [allow]: `RegexModel.notAllowed([RegexChar.whitespace, RegexChar.dot])`.
+  factory RegexModel.notAllowed(
+    List<RegexChar> chars, {
+    String allow = '',
+    String? title,
+  }) {
+    final banned = RegexModel.allowOnly(chars, allow: allow);
+    return RegexModel(
+      title: title ?? 'No ${_words(chars, allow)}',
+      test: (value) =>
+          !value.runes.any((r) => banned.matches(String.fromCharCode(r))),
+    );
+  }
+
+  /// Only letters (any language), plus [allowList] groups and [allow]
+  /// characters: `RegexModel.lettersOnly(allowList: [RegexChar.whitespace])`.
+  factory RegexModel.lettersOnly({
+    List<RegexChar> allowList = const [],
+    String allow = '',
+    String? title,
+  }) => RegexModel.allowOnly(
+    [RegexChar.letters, ...allowList],
+    allow: allow,
+    title: title,
+  );
+
+  /// Only digits 0–9, plus [allowList] groups and [allow] characters.
+  factory RegexModel.digitsOnly({
+    List<RegexChar> allowList = const [],
+    String allow = '',
+    String? title,
+  }) => RegexModel.allowOnly(
+    [RegexChar.digits, ...allowList],
+    allow: allow,
+    title: title,
+  );
+
+  /// Only letters and digits, plus [allowList] groups and [allow] characters:
+  /// `RegexModel.lettersAndDigits(allowList: [RegexChar.underscore])`.
+  factory RegexModel.lettersAndDigits({
+    List<RegexChar> allowList = const [],
+    String allow = '',
+    String? title,
+  }) => RegexModel.allowOnly(
+    [RegexChar.letters, RegexChar.digits, ...allowList],
+    allow: allow,
+    title: title,
+  );
+
+  // Characters in [allow] are escaped here, so callers never write regex.
+  static String _escape(String allow) =>
+      allow.runes.map((r) => '\\u{${r.toRadixString(16)}}').join();
+
+  static String _words(List<RegexChar> chars, String allow) {
+    final words = [
+      for (final c in chars) c.label,
+      for (final c in allow.split('')) c == ' ' ? 'spaces' : c,
+    ];
+    return words.length == 1
+        ? words.first
+        : '${words.sublist(0, words.length - 1).join(', ')} and ${words.last}';
+  }
 
   /// Starts with [text], e.g. `startsWith('TR')` for an IBAN.
   factory RegexModel.startsWith(
@@ -265,7 +311,7 @@ class RegexModel {
   }) => [
     RegexModel.minLength(minLength),
     RegexModel.maxLength(maxLength),
-    RegexModel.lettersAndDigits(allow: '_'),
+    RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]),
   ];
 
   /// Ready e-mail rules.

@@ -100,10 +100,44 @@ void main() {
         expect(odd.matches('a*b'), isFalse);
         expect(
           RegexModel.lettersAndDigits(allow: '_ ').title,
-          'Only letters and numbers, plus: _, space',
+          'Only letters, numbers, _ and spaces',
         );
       },
     );
+
+    test('RegexChar lists', () {
+      final name = RegexModel.lettersOnly(
+        allowList: [RegexChar.whitespace, RegexChar.dash, RegexChar.apostrophe],
+      );
+      expect(name.matches("Ali-Can O'Neil"), isTrue);
+      expect(name.matches('Ali2'), isFalse);
+      expect(name.title, "Only letters, spaces, - and '");
+
+      final user = RegexModel.allowOnly([
+        RegexChar.englishLetters,
+        RegexChar.digits,
+        RegexChar.underscore,
+        RegexChar.dot,
+      ]);
+      expect(user.matches('samil.d_42'), isTrue);
+      expect(user.matches('şamil'), isFalse);
+
+      final withSpecial = RegexModel.allowOnly([
+        RegexChar.digits,
+        RegexChar.special,
+      ]);
+      expect(withSpecial.matches('12!#€'), isTrue);
+      expect(withSpecial.matches('12a'), isFalse);
+
+      final noBad = RegexModel.notAllowed([
+        RegexChar.whitespace,
+        RegexChar.dot,
+      ]);
+      expect(noBad.matches('ab_c'), isTrue);
+      expect(noBad.matches('a b'), isFalse);
+      expect(noBad.matches('a.b'), isFalse);
+      expect(noBad.title, 'No spaces and .');
+    });
 
     test('startsWith, endsWith, contains', () {
       expect(RegexModel.startsWith('TR').matches('TR12'), isTrue);
