@@ -20,6 +20,8 @@
   `RegexForm.isValidOf(context)`, `RegexFormController`); a change in one field re-checks the others.
 * **`RegexModel.iban()`**: real IBAN check (country length + mod-97 check digits), spaces and lowercase
   allowed, optional `country:`.
+* Ready languages reviewed for each language's form wording (e.g. French "Pas d'espaces", German
+  "Ziffer", Japanese 英大文字 / 半角英字); the show / hide button now says "Show password".
 * **Form support**: an empty field shows "Required" (`RegexLabels.required`), not the first rule;
   `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.

@@ -1,5 +1,8 @@
 part of 'regex_labels.dart';
 
+String _cap(String text) =>
+    text.isEmpty ? text : '${text[0].toUpperCase()}${text.substring(1)}';
+
 String _joinWith(List<String> words, String and) => words.length == 1
     ? words.first
     : '${words.sublist(0, words.length - 1).join(', ')} $and ${words.last}';
@@ -42,7 +45,7 @@ const _tr = RegexLabels(
   join: _trJoin,
   chars: {
     RegexChar.letters: 'harfler',
-    RegexChar.englishLetters: 'İngilizce harfler',
+    RegexChar.englishLetters: 'İngilizce harfler (a–z)',
     RegexChar.uppercase: 'büyük harfler',
     RegexChar.lowercase: 'küçük harfler',
     RegexChar.digits: 'rakamlar',
@@ -61,8 +64,8 @@ const _tr = RegexLabels(
   met: 'tamam',
   unmet: 'eksik',
   strength: ['Çok zayıf', 'Zayıf', 'Orta', 'İyi', 'Güçlü'],
-  show: 'Göster',
-  hide: 'Gizle',
+  show: 'Şifreyi göster',
+  hide: 'Şifreyi gizle',
   passwordField: 'Şifre',
   emailField: 'E-posta',
   userNameField: 'Kullanıcı adı',
@@ -77,7 +80,7 @@ String _deUpper(int n) =>
     n == 1 ? 'Ein Großbuchstabe' : 'Mindestens $n Großbuchstaben';
 String _deLower(int n) =>
     n == 1 ? 'Ein Kleinbuchstabe' : 'Mindestens $n Kleinbuchstaben';
-String _deDigit(int n) => n == 1 ? 'Eine Zahl' : 'Mindestens $n Zahlen';
+String _deDigit(int n) => n == 1 ? 'Eine Ziffer' : 'Mindestens $n Ziffern';
 String _deSpecial(int n) =>
     n == 1 ? 'Ein Sonderzeichen' : 'Mindestens $n Sonderzeichen';
 String _deRepeat(int n) => 'Kein Zeichen $n-mal hintereinander';
@@ -108,10 +111,10 @@ const _de = RegexLabels(
   join: _deJoin,
   chars: {
     RegexChar.letters: 'Buchstaben',
-    RegexChar.englishLetters: 'englische Buchstaben',
+    RegexChar.englishLetters: 'Buchstaben ohne Umlaute (a–z)',
     RegexChar.uppercase: 'Großbuchstaben',
     RegexChar.lowercase: 'Kleinbuchstaben',
-    RegexChar.digits: 'Zahlen',
+    RegexChar.digits: 'Ziffern',
     RegexChar.whitespace: 'Leerzeichen',
     RegexChar.special: 'Sonderzeichen',
   },
@@ -127,8 +130,8 @@ const _de = RegexLabels(
   met: 'erfüllt',
   unmet: 'nicht erfüllt',
   strength: ['Sehr schwach', 'Schwach', 'Mittel', 'Gut', 'Stark'],
-  show: 'Anzeigen',
-  hide: 'Verbergen',
+  show: 'Passwort anzeigen',
+  hide: 'Passwort ausblenden',
   passwordField: 'Passwort',
   emailField: 'E-Mail',
   userNameField: 'Benutzername',
@@ -146,10 +149,10 @@ String _esLower(int n) =>
 String _esDigit(int n) => n == 1 ? 'Un número' : 'Al menos $n números';
 String _esSpecial(int n) =>
     n == 1 ? 'Un carácter especial' : 'Al menos $n caracteres especiales';
-String _esRepeat(int n) => 'Ningún carácter $n veces seguidas';
-String _esStarts(String t) => 'Empieza por "$t"';
-String _esNotStarts(String t) => 'No empieza por "$t"';
-String _esEnds(String t) => 'Termina en "$t"';
+String _esRepeat(int n) => 'Sin repetir un carácter $n veces seguidas';
+String _esStarts(String t) => 'Comienza con "$t"';
+String _esNotStarts(String t) => 'No comienza con "$t"';
+String _esEnds(String t) => 'Termina con "$t"';
 String _esContains(String t) => 'Contiene "$t"';
 String _esOnly(String l) => 'Solo $l';
 String _esNone(String l) => 'Sin $l';
@@ -174,7 +177,7 @@ const _es = RegexLabels(
   join: _esJoin,
   chars: {
     RegexChar.letters: 'letras',
-    RegexChar.englishLetters: 'letras inglesas',
+    RegexChar.englishLetters: 'letras sin acentos (a–z)',
     RegexChar.uppercase: 'letras mayúsculas',
     RegexChar.lowercase: 'letras minúsculas',
     RegexChar.digits: 'números',
@@ -193,8 +196,8 @@ const _es = RegexLabels(
   met: 'cumplido',
   unmet: 'no cumplido',
   strength: ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Fuerte'],
-  show: 'Mostrar',
-  hide: 'Ocultar',
+  show: 'Mostrar contraseña',
+  hide: 'Ocultar contraseña',
   passwordField: 'Contraseña',
   emailField: 'Correo electrónico',
   userNameField: 'Nombre de usuario',
@@ -202,7 +205,7 @@ const _es = RegexLabels(
 
 // Français
 String _frMin(int n) => 'Au moins $n caractères';
-String _frMax(int n) => 'Au plus $n caractères';
+String _frMax(int n) => 'Au maximum $n caractères';
 String _frBetween(int a, int b) => 'De $a à $b caractères';
 String _frExact(int n) => 'Exactement $n caractères';
 String _frUpper(int n) => n == 1 ? 'Une majuscule' : 'Au moins $n majuscules';
@@ -210,13 +213,17 @@ String _frLower(int n) => n == 1 ? 'Une minuscule' : 'Au moins $n minuscules';
 String _frDigit(int n) => n == 1 ? 'Un chiffre' : 'Au moins $n chiffres';
 String _frSpecial(int n) =>
     n == 1 ? 'Un caractère spécial' : 'Au moins $n caractères spéciaux';
-String _frRepeat(int n) => 'Aucun caractère $n fois de suite';
+String _frRepeat(int n) => 'Pas le même caractère $n fois de suite';
 String _frStarts(String t) => 'Commence par « $t »';
 String _frNotStarts(String t) => 'Ne commence pas par « $t »';
 String _frEnds(String t) => 'Se termine par « $t »';
 String _frContains(String t) => 'Contient « $t »';
-String _frOnly(String l) => 'Uniquement $l';
-String _frNone(String l) => 'Pas de $l';
+String _frOnly(String l) => '${_cap(l)} uniquement';
+// "de" becomes "d'" before a vowel or a mute h: "Pas d'espaces".
+String _frNone(String l) =>
+    RegExp('^[aeiouyhàâéèêîôû]', caseSensitive: false).hasMatch(l)
+    ? "Pas d'$l"
+    : 'Pas de $l';
 String _frJoin(List<String> w) => _joinWith(w, 'et');
 
 const _fr = RegexLabels(
@@ -257,8 +264,8 @@ const _fr = RegexLabels(
   met: 'respecté',
   unmet: 'non respecté',
   strength: ['Très faible', 'Faible', 'Moyen', 'Bon', 'Fort'],
-  show: 'Afficher',
-  hide: 'Masquer',
+  show: 'Afficher le mot de passe',
+  hide: 'Masquer le mot de passe',
   passwordField: 'Mot de passe',
   emailField: 'E-mail',
   userNameField: "Nom d'utilisateur",
@@ -279,10 +286,10 @@ String _itSpecial(int n) =>
 String _itRepeat(int n) => 'Nessun carattere ripetuto $n volte di fila';
 String _itStarts(String t) => 'Inizia con "$t"';
 String _itNotStarts(String t) => 'Non inizia con "$t"';
-String _itEnds(String t) => 'Finisce con "$t"';
+String _itEnds(String t) => 'Termina con "$t"';
 String _itContains(String t) => 'Contiene "$t"';
 String _itOnly(String l) => 'Solo $l';
-String _itNone(String l) => 'Niente $l';
+String _itNone(String l) => 'Senza $l';
 String _itJoin(List<String> w) => _joinWith(w, 'e');
 
 const _it = RegexLabels(
@@ -323,8 +330,8 @@ const _it = RegexLabels(
   met: 'soddisfatto',
   unmet: 'non soddisfatto',
   strength: ['Molto debole', 'Debole', 'Discreta', 'Buona', 'Forte'],
-  show: 'Mostra',
-  hide: 'Nascondi',
+  show: 'Mostra password',
+  hide: 'Nascondi password',
   passwordField: 'Password',
   emailField: 'E-mail',
   userNameField: 'Nome utente',
@@ -342,7 +349,7 @@ String _ptLower(int n) =>
 String _ptDigit(int n) => n == 1 ? 'Um número' : 'Pelo menos $n números';
 String _ptSpecial(int n) =>
     n == 1 ? 'Um caractere especial' : 'Pelo menos $n caracteres especiais';
-String _ptRepeat(int n) => 'Nenhum caractere $n vezes seguidas';
+String _ptRepeat(int n) => 'Sem repetir um caractere $n vezes seguidas';
 String _ptStarts(String t) => 'Começa com "$t"';
 String _ptNotStarts(String t) => 'Não começa com "$t"';
 String _ptEnds(String t) => 'Termina com "$t"';
@@ -389,8 +396,8 @@ const _pt = RegexLabels(
   met: 'atendido',
   unmet: 'não atendido',
   strength: ['Muito fraca', 'Fraca', 'Razoável', 'Boa', 'Forte'],
-  show: 'Mostrar',
-  hide: 'Ocultar',
+  show: 'Mostrar senha',
+  hide: 'Ocultar senha',
   passwordField: 'Senha',
   emailField: 'E-mail',
   userNameField: 'Nome de usuário',
@@ -401,17 +408,17 @@ String _jaMin(int n) => '$n文字以上';
 String _jaMax(int n) => '$n文字以内';
 String _jaBetween(int a, int b) => '$a〜$b文字';
 String _jaExact(int n) => 'ちょうど$n文字';
-String _jaUpper(int n) => n == 1 ? '大文字を1つ' : '大文字を$nつ以上';
-String _jaLower(int n) => n == 1 ? '小文字を1つ' : '小文字を$nつ以上';
-String _jaDigit(int n) => n == 1 ? '数字を1つ' : '数字を$nつ以上';
-String _jaSpecial(int n) => n == 1 ? '記号を1つ' : '記号を$nつ以上';
-String _jaRepeat(int n) => '同じ文字を$n回続けない';
+String _jaUpper(int n) => '英大文字を$n文字以上含む';
+String _jaLower(int n) => '英小文字を$n文字以上含む';
+String _jaDigit(int n) => '数字を$n文字以上含む';
+String _jaSpecial(int n) => '記号を$n文字以上含む';
+String _jaRepeat(int n) => '同じ文字を$n回以上続けない';
 String _jaStarts(String t) => '「$t」で始まる';
 String _jaNotStarts(String t) => '「$t」で始まらない';
 String _jaEnds(String t) => '「$t」で終わる';
 String _jaContains(String t) => '「$t」を含む';
 String _jaOnly(String l) => '$lのみ';
-String _jaNone(String l) => '$lなし';
+String _jaNone(String l) => '$lを含まない';
 String _jaJoin(List<String> w) => w.join('、');
 
 const _ja = RegexLabels(
@@ -432,28 +439,28 @@ const _ja = RegexLabels(
   none: _jaNone,
   join: _jaJoin,
   chars: {
-    RegexChar.letters: '文字',
-    RegexChar.englishLetters: '英字',
-    RegexChar.uppercase: '大文字',
-    RegexChar.lowercase: '小文字',
-    RegexChar.digits: '数字',
+    RegexChar.letters: 'かな・漢字・英字',
+    RegexChar.englishLetters: '半角英字',
+    RegexChar.uppercase: '英大文字',
+    RegexChar.lowercase: '英小文字',
+    RegexChar.digits: '半角数字',
     RegexChar.whitespace: 'スペース',
     RegexChar.special: '記号',
   },
   space: 'スペース',
-  noSpaces: 'スペースなし',
+  noSpaces: 'スペースを含まない',
   email: '有効なメールアドレス',
   phone: '有効な電話番号',
   url: '有効なURL',
   iban: '有効なIBAN',
-  sameAs: 'パスワードが一致すること',
+  sameAs: 'パスワードが一致している',
   required: '必須項目です',
   notContains: '名前を含まない',
   met: '達成',
   unmet: '未達成',
   strength: ['とても弱い', '弱い', '普通', '強い', 'とても強い'],
-  show: '表示',
-  hide: '非表示',
+  show: 'パスワードを表示',
+  hide: 'パスワードを非表示',
   passwordField: 'パスワード',
   emailField: 'メールアドレス',
   userNameField: 'ユーザー名',

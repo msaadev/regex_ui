@@ -212,6 +212,25 @@ void main() {
       expect(RegexLabels.current.char(RegexChar.letters), 'Buchstaben');
     });
 
+    test('translator details', () {
+      RegexLabels.current = RegexLabels.fr;
+      expect(
+        RegexModel.notAllowed([RegexChar.whitespace]).title,
+        "Pas d'espaces",
+      );
+      expect(RegexModel.notAllowed([RegexChar.dot]).title, 'Pas de .');
+      expect(
+        RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]).title,
+        'Lettres, chiffres et _ uniquement',
+      );
+      RegexLabels.current = RegexLabels.de;
+      expect(RegexModel.digit().title, 'Eine Ziffer');
+      RegexLabels.current = RegexLabels.ja;
+      expect(RegexModel.uppercase().title, '英大文字を1文字以上含む');
+      expect(RegexModel.notAllowed([RegexChar.whitespace]).title, 'スペースを含まない');
+      expect(RegexModel.iban().title, '有効なIBAN');
+    });
+
     test('every ready language fills every text', () {
       for (final labels in RegexLabels.builtIn.values) {
         expect(labels.strength, hasLength(5));
@@ -279,7 +298,7 @@ void main() {
       MaterialApp(home: Scaffold(body: RegexTextField.password())),
     );
     expect(find.text('Password'), findsOneWidget);
-    expect(find.byTooltip('Show'), findsOneWidget);
+    expect(find.byTooltip('Show password'), findsOneWidget);
     await tester.showKeyboard(find.byType(TextFormField));
     await tester.pumpAndSettle();
     expect(find.text('One uppercase letter'), findsOneWidget);
@@ -321,7 +340,7 @@ void main() {
 
     EditableText field() => tester.widget(find.byType(EditableText));
     expect(field().obscureText, isTrue);
-    await tester.tap(find.byTooltip('Show'));
+    await tester.tap(find.byTooltip('Show password'));
     await tester.pump();
     expect(field().obscureText, isFalse);
 
