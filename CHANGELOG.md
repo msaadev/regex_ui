@@ -1,3 +1,10 @@
+## 1.1.1
+
+* Length rules (`minLength`, `maxLength`, `lengthBetween`, `exactLength`) count characters, so an
+  emoji counts as one, not two.
+* `RegexUI.validate` also reports the starting state, so pre-filled text can enable a button.
+* `notContains` is faster on long text.
+
 ## 1.1.0
 
 * **`RegexTextField`**: field + rules + strength bar + show / hide button in one widget; makes its own

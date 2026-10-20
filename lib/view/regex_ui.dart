@@ -139,6 +139,10 @@ class _RegexUIState extends State<RegexUI> {
     super.initState();
     widget.controller.addListener(_onTextChanged);
     widget.focusNode?.addListener(_onFocusChanged);
+    // Report the starting state too, so pre-filled text can enable a button.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.validate?.call(_isValid());
+    });
   }
 
   @override

@@ -479,4 +479,30 @@ void main() {
     expect(RegexModel.allMet(rules, '', optional: true), isTrue);
     expect(RegexModel.allMet(rules, ''), isFalse);
   });
+
+  test('lengths count characters, not UTF-16 units', () {
+    expect(RegexModel.minLength(8).matches('😀😀😀😀'), isFalse);
+    expect(RegexModel.exactLength(4).matches('😀😀😀😀'), isTrue);
+    expect(RegexModel.maxLength(3).matches('😀😀😀'), isTrue);
+    expect(RegexModel.lengthBetween(2, 3).matches('😀😀'), isTrue);
+  });
+
+  testWidgets('validate reports pre-filled text on the first frame', (
+    tester,
+  ) async {
+    final results = <bool>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RegexUI(
+            controller: TextEditingController(text: 'abcdefgh'),
+            regexList: [RegexModel.minLength(8)],
+            validate: results.add,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(results, [true]);
+  });
 }

@@ -43,7 +43,7 @@ class RegexModel {
   /// At least [length] characters.
   factory RegexModel.minLength(int length, {String? title}) => RegexModel(
     title: title ?? RegexLabels.current.minLength(length),
-    test: (value) => value.length >= length,
+    test: (value) => value.runes.length >= length,
   );
 
   /// Contains [count] or more uppercase letters (any language).
@@ -91,13 +91,16 @@ class RegexModel {
   factory RegexModel.lengthBetween(int min, int max, {String? title}) =>
       RegexModel(
         title: title ?? RegexLabels.current.lengthBetween(min, max),
-        test: (value) => value.length >= min && value.length <= max,
+        test: (value) {
+          final n = value.runes.length;
+          return n >= min && n <= max;
+        },
       );
 
   /// Exactly [length] characters, e.g. a 6-digit code.
   factory RegexModel.exactLength(int length, {String? title}) => RegexModel(
     title: title ?? RegexLabels.current.exactLength(length),
-    test: (value) => value.length == length,
+    test: (value) => value.runes.length == length,
   );
 
   /// Only the character groups in [chars], plus the characters in [allow]:
@@ -239,7 +242,7 @@ class RegexModel {
   /// At most [length] characters.
   factory RegexModel.maxLength(int length, {String? title}) => RegexModel(
     title: title ?? RegexLabels.current.maxLength(length),
-    test: (value) => value.length <= length,
+    test: (value) => value.runes.length <= length,
   );
 
   /// Equals the text of [other], e.g. "repeat password".
@@ -264,17 +267,16 @@ class RegexModel {
       );
 
   // shortcut: folds common Latin accents only, enough for names in passwords.
-  static String _fold(String text) {
+  static final Map<int, int> _accents = () {
     const from = 'àáâãäåçćèéêëìíîïıñòóôõöşśùúûüğýÿž';
     const to = 'aaaaaacceeeeiiiiinooooossuuuugyyz';
-    final lower = text.toLowerCase();
-    return String.fromCharCodes(
-      lower.runes.map((r) {
-        final i = from.runes.toList().indexOf(r);
-        return i < 0 ? r : to.codeUnitAt(i);
-      }),
-    ).replaceAll('i̇', 'i');
-  }
+    final keys = from.runes.toList();
+    return {for (var i = 0; i < keys.length; i++) keys[i]: to.codeUnitAt(i)};
+  }();
+
+  static String _fold(String text) => String.fromCharCodes(
+    text.toLowerCase().replaceAll('i̇', 'i').runes.map((r) => _accents[r] ?? r),
+  );
 
   /// No character [count] or more times in a row ("aaa" for 3).
   factory RegexModel.noRepeating({int count = 3, String? title}) {
