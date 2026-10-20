@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/password_strength.dart';
+import '../models/regex_labels.dart';
 import '../models/regex_model.dart';
 
 /// When the rule list is shown.
@@ -82,8 +83,8 @@ class RegexUI extends StatefulWidget {
   /// none in [RegexUIStrength.rules] mode.
   final List<String>? strengthLabels;
 
-  /// Screen reader words for a met / not met rule.
-  final String metLabel, unmetLabel;
+  /// Screen reader words for a met / not met rule. Default: [RegexLabels].
+  final String? metLabel, unmetLabel;
 
   /// Creates the checklist for [controller].
   const RegexUI({
@@ -107,8 +108,8 @@ class RegexUI extends StatefulWidget {
     this.showStrength = false,
     this.strengthMode = RegexUIStrength.rules,
     this.strengthLabels,
-    this.metLabel = 'met',
-    this.unmetLabel = 'not met',
+    this.metLabel,
+    this.unmetLabel,
   });
 
   @override
@@ -193,7 +194,7 @@ class _RegexUIState extends State<RegexUI> {
     final labels =
         widget.strengthLabels ??
         (widget.strengthMode == RegexUIStrength.password
-            ? const ['Very weak', 'Weak', 'Fair', 'Good', 'Strong']
+            ? RegexLabels.current.strength
             : null);
     final label = labels == null || labels.isEmpty
         ? null
@@ -239,7 +240,7 @@ class _RegexUIState extends State<RegexUI> {
 
   Widget _buildRow(BuildContext context, RegexModel rule, bool met) {
     return Semantics(
-      label: '${rule.title}: ${met ? widget.metLabel : widget.unmetLabel}',
+      label: '${rule.title}: ${_status(met)}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -266,7 +267,7 @@ class _RegexUIState extends State<RegexUI> {
             Semantics(
               label:
                   '${widget.regexList[i].title}: '
-                  '${results[i] ? widget.metLabel : widget.unmetLabel}',
+                  '${_status(results[i])}',
               excludeSemantics: true,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
@@ -339,6 +340,10 @@ class _RegexUIState extends State<RegexUI> {
       child: Text(rule.title),
     );
   }
+
+  String _status(bool met) => met
+      ? widget.metLabel ?? RegexLabels.current.met
+      : widget.unmetLabel ?? RegexLabels.current.unmet;
 
   // ratio fills the bar; level (0–1) picks the label.
   ({double ratio, double level}) _strength(List<bool> results) {

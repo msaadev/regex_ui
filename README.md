@@ -158,19 +158,41 @@ RegexUI(
 )
 ```
 
-### Custom rule and translations
+### Your language (or your own words)
+
+Every text regex_ui writes by itself (rule titles, `RegexChar` names, "met / not met", strength
+words, Show / Hide, field labels) comes from `RegexLabels`. Set it once, before the rules are built,
+for example in `main()`. Pass only what you want to change; the rest stays English.
 
 ```dart
-RegexUI(
-  controller: controller,
-  metLabel: 'erfüllt',
-  unmetLabel: 'nicht erfüllt',
-  regexList: [
-    RegexModel.minLength(8, title: 'Mindestens 8 Zeichen'),
-    RegexModel(title: 'Nicht "passwort"', test: (v) => v.toLowerCase() != 'passwort'),
-  ],
-)
+RegexLabels.current = RegexLabels(
+  minLength: (n) => '$n文字以上',
+  digit: (n) => n == 1 ? '数字を1つ' : '数字を$n つ以上',
+  only: (list) => '$listのみ',
+  join: (words) => words.join('、'),
+  chars: {
+    RegexChar.letters: '文字',
+    RegexChar.whitespace: 'スペース',
+  },
+  met: '達成',
+  unmet: '未達成',
+  strength: ['とても弱い', '弱い', '普通', '良い', '強い'],
+  show: '表示',
+  hide: '非表示',
+  passwordField: 'パスワード',
+);
+
+RegexModel.lettersOnly(allowList: [RegexChar.whitespace]) // "文字、スペースのみ"
 ```
+
+Change the words of just one rule with `title:`:
+
+```dart
+RegexModel.minLength(8, title: 'Mindestens 8 Zeichen')
+RegexModel(title: 'Nicht "passwort"', test: (v) => v.toLowerCase() != 'passwort')
+```
+
+If the user can switch language in the app, set `RegexLabels.current` again and rebuild the page.
 
 ## Options
 
@@ -179,13 +201,13 @@ RegexUI(
 | `style` | `list` | `list` or `chips` |
 | `showStrength` | `false` | strength bar above the rules |
 | `strengthMode` | `rules` | `rules` (share of met rules) or `password` (`passwordStrength`, 0–4) |
-| `strengthLabels` | 5 English labels in `password` mode | words next to the bar, weakest first |
+| `strengthLabels` | `RegexLabels.strength` in `password` mode | words next to the bar, weakest first |
 | `visibility` | `focus` with a `focusNode`, else `always` | |
 | `iconTrue` / `iconFalse` | check / close | per rule too |
 | `iconColorTrue` / `iconColorFalse` | green / outline | per rule: `colorTrue` / `colorFalse` |
 | `textColorTrue` / `textColorFalse` / `textStyle` | theme | per rule too |
 | `padding` / `margin` / `boxDecoration` | none | |
-| `metLabel` / `unmetLabel` | "met" / "not met" | screen reader words |
+| `metLabel` / `unmetLabel` | from `RegexLabels` ("met" / "not met") | screen reader words |
 
 ## Upgrading from 0.0.1
 

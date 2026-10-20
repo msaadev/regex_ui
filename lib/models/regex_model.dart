@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'regex_char.dart';
+import 'regex_labels.dart';
 
 /// One rule shown by `RegexUI`: a title and a check (a [RegExp] or a function).
 class RegexModel {
@@ -41,7 +42,7 @@ class RegexModel {
 
   /// At least [length] characters.
   factory RegexModel.minLength(int length, {String? title}) => RegexModel(
-    title: title ?? 'At least $length characters',
+    title: title ?? RegexLabels.current.minLength(length),
     test: (value) => value.length >= length,
   );
 
@@ -50,10 +51,7 @@ class RegexModel {
       RegexModel._atLeast(
         count,
         RegExp(r'\p{Lu}', unicode: true),
-        title ??
-            (count == 1
-                ? 'One uppercase letter'
-                : 'At least $count uppercase letters'),
+        title ?? RegexLabels.current.uppercase(count),
       );
 
   /// Contains [count] or more lowercase letters (any language).
@@ -61,10 +59,7 @@ class RegexModel {
       RegexModel._atLeast(
         count,
         RegExp(r'\p{Ll}', unicode: true),
-        title ??
-            (count == 1
-                ? 'One lowercase letter'
-                : 'At least $count lowercase letters'),
+        title ?? RegexLabels.current.lowercase(count),
       );
 
   /// Contains [count] or more digits.
@@ -72,7 +67,7 @@ class RegexModel {
       RegexModel._atLeast(
         count,
         RegExp(r'\d'),
-        title ?? (count == 1 ? 'One number' : 'At least $count numbers'),
+        title ?? RegexLabels.current.digit(count),
       );
 
   /// Contains [count] or more characters that are not a letter, digit or
@@ -81,10 +76,7 @@ class RegexModel {
       RegexModel._atLeast(
         count,
         RegExp(r'[^\p{L}\p{N}\s]', unicode: true),
-        title ??
-            (count == 1
-                ? 'One special character'
-                : 'At least $count special characters'),
+        title ?? RegexLabels.current.special(count),
       );
 
   factory RegexModel._atLeast(int count, RegExp kind, String title) =>
@@ -98,13 +90,13 @@ class RegexModel {
   /// Between [min] and [max] characters, e.g. a user name of 3–20.
   factory RegexModel.lengthBetween(int min, int max, {String? title}) =>
       RegexModel(
-        title: title ?? '$min to $max characters',
+        title: title ?? RegexLabels.current.lengthBetween(min, max),
         test: (value) => value.length >= min && value.length <= max,
       );
 
   /// Exactly [length] characters, e.g. a 6-digit code.
   factory RegexModel.exactLength(int length, {String? title}) => RegexModel(
-    title: title ?? 'Exactly $length characters',
+    title: title ?? RegexLabels.current.exactLength(length),
     test: (value) => value.length == length,
   );
 
@@ -123,7 +115,7 @@ class RegexModel {
     final one = special ? '(?:$cls|[${RegexChar.special.pattern}])' : cls;
     final only = RegExp('^$one+\$', unicode: true);
     return RegexModel(
-      title: title ?? 'Only ${_words(chars, allow)}',
+      title: title ?? RegexLabels.current.only(_words(chars, allow)),
       test: only.hasMatch,
     );
   }
@@ -137,7 +129,7 @@ class RegexModel {
   }) {
     final banned = RegexModel.allowOnly(chars, allow: allow);
     return RegexModel(
-      title: title ?? 'No ${_words(chars, allow)}',
+      title: title ?? RegexLabels.current.none(_words(chars, allow)),
       test: (value) =>
           !value.runes.any((r) => banned.matches(String.fromCharCode(r))),
     );
@@ -183,13 +175,11 @@ class RegexModel {
       allow.runes.map((r) => '\\u{${r.toRadixString(16)}}').join();
 
   static String _words(List<RegexChar> chars, String allow) {
-    final words = [
-      for (final c in chars) c.label,
-      for (final c in allow.split('')) c == ' ' ? 'spaces' : c,
-    ];
-    return words.length == 1
-        ? words.first
-        : '${words.sublist(0, words.length - 1).join(', ')} and ${words.last}';
+    final labels = RegexLabels.current;
+    return labels.join([
+      for (final c in chars) labels.char(c),
+      for (final c in allow.split('')) c == ' ' ? labels.space : c,
+    ]);
   }
 
   /// Starts with [text], e.g. `startsWith('TR')` for an IBAN.
@@ -198,7 +188,7 @@ class RegexModel {
     bool ignoreCase = false,
     String? title,
   }) => RegexModel(
-    title: title ?? 'Starts with "$text"',
+    title: title ?? RegexLabels.current.startsWith(text),
     test: (value) => ignoreCase
         ? value.toLowerCase().startsWith(text.toLowerCase())
         : value.startsWith(text),
@@ -210,7 +200,7 @@ class RegexModel {
     bool ignoreCase = true,
     String? title,
   }) => RegexModel(
-    title: title ?? 'Ends with "$text"',
+    title: title ?? RegexLabels.current.endsWith(text),
     test: (value) => ignoreCase
         ? value.toLowerCase().endsWith(text.toLowerCase())
         : value.endsWith(text),
@@ -222,59 +212,62 @@ class RegexModel {
     bool ignoreCase = true,
     String? title,
   }) => RegexModel(
-    title: title ?? 'Contains "$text"',
+    title: title ?? RegexLabels.current.contains(text),
     test: (value) => ignoreCase
         ? value.toLowerCase().contains(text.toLowerCase())
         : value.contains(text),
   );
 
   /// Contains no whitespace.
-  factory RegexModel.noSpaces({String title = 'No spaces'}) =>
-      RegexModel(title: title, test: (value) => !value.contains(RegExp(r'\s')));
+  factory RegexModel.noSpaces({String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.noSpaces,
+    test: (value) => !value.contains(RegExp(r'\s')),
+  );
 
   /// Looks like an e-mail address.
-  factory RegexModel.email({String title = 'Valid e-mail address'}) =>
-      RegexModel(title: title, regExp: RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$'));
+  factory RegexModel.email({String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.email,
+    regExp: RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$'),
+  );
 
   /// At most [length] characters.
   factory RegexModel.maxLength(int length, {String? title}) => RegexModel(
-    title: title ?? 'At most $length characters',
+    title: title ?? RegexLabels.current.maxLength(length),
     test: (value) => value.length <= length,
   );
 
   /// Equals the text of [other], e.g. "repeat password".
-  factory RegexModel.sameAs(
-    TextEditingController other, {
-    String title = 'Passwords match',
-  }) => RegexModel(title: title, test: (value) => value == other.text);
+  factory RegexModel.sameAs(TextEditingController other, {String? title}) =>
+      RegexModel(
+        title: title ?? RegexLabels.current.sameAs,
+        test: (value) => value == other.text,
+      );
 
   /// Does not contain [text] (case-insensitive), e.g. the user name:
   /// `RegexModel.notContains(() => userName.text)`.
-  factory RegexModel.notContains(
-    String Function() text, {
-    String title = 'Does not contain your name',
-  }) => RegexModel(
-    title: title,
-    test: (value) {
-      final part = text().trim().toLowerCase();
-      return (part.isEmpty || !value.toLowerCase().contains(part));
-    },
-  );
+  factory RegexModel.notContains(String Function() text, {String? title}) =>
+      RegexModel(
+        title: title ?? RegexLabels.current.notContains,
+        test: (value) {
+          final part = text().trim().toLowerCase();
+          return (part.isEmpty || !value.toLowerCase().contains(part));
+        },
+      );
 
   /// No character [count] or more times in a row ("aaa" for 3).
   factory RegexModel.noRepeating({int count = 3, String? title}) {
     assert(count >= 2, 'count must be at least 2');
     final repeat = RegExp('(.)\\1{${count - 1}}');
     return RegexModel(
-      title: title ?? 'No character $count times in a row',
+      title: title ?? RegexLabels.current.noRepeating(count),
       test: (value) => !repeat.hasMatch(value),
     );
   }
 
   /// Looks like a phone number: optional +, 7–15 digits, spaces, dashes,
   /// dots or parentheses.
-  factory RegexModel.phone({String title = 'Valid phone number'}) => RegexModel(
-    title: title,
+  factory RegexModel.phone({String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.phone,
     test: (value) {
       if (!RegExp(r'^\+?[\d\s\-().]+$').hasMatch(value.trim())) {
         return false;
@@ -285,8 +278,8 @@ class RegexModel {
   );
 
   /// An http or https address with a domain, e.g. https://monsware.com.
-  factory RegexModel.url({String title = 'Valid web address'}) => RegexModel(
-    title: title,
+  factory RegexModel.url({String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.url,
     test: (value) {
       final uri = Uri.tryParse(value.trim());
       return uri != null &&

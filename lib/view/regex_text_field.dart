@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/regex_labels.dart';
 import '../models/regex_model.dart';
 import 'regex_ui.dart';
 
@@ -49,7 +50,8 @@ class RegexTextField extends StatefulWidget {
   final List<String>? strengthLabels;
 
   /// Tooltips (and screen reader labels) of the show / hide button.
-  final String showLabel, hideLabel;
+  /// Default: [RegexLabels].
+  final String? showLabel, hideLabel;
 
   /// Creates a field checked against [rules].
   const RegexTextField({
@@ -69,8 +71,8 @@ class RegexTextField extends StatefulWidget {
     this.showStrength = false,
     this.strengthMode = RegexUIStrength.rules,
     this.strengthLabels,
-    this.showLabel = 'Show',
-    this.hideLabel = 'Hide',
+    this.showLabel,
+    this.hideLabel,
   });
 
   /// A password field in one line: hidden text with a show / hide button,
@@ -85,14 +87,16 @@ class RegexTextField extends StatefulWidget {
     this.validate,
     this.onSubmitted,
     this.visibility = RegexUIVisibility.focus,
-    this.showLabel = 'Show',
-    this.hideLabel = 'Hide',
-    String label = 'Password',
+    this.showLabel,
+    this.hideLabel,
+    String? label,
     int minLength = 8,
     this.style = RegexUIStyle.list,
     this.strengthLabels,
   }) : rules = rules ?? RegexModel.passwordRules(minLength: minLength),
-       decoration = InputDecoration(labelText: label),
+       decoration = InputDecoration(
+         labelText: label ?? RegexLabels.current.passwordField,
+       ),
        obscureText = true,
        keyboardType = TextInputType.visiblePassword,
        autofillHints = const [AutofillHints.password],
@@ -109,12 +113,14 @@ class RegexTextField extends StatefulWidget {
     this.validate,
     this.onSubmitted,
     this.visibility = RegexUIVisibility.focus,
-    this.showLabel = 'Show',
-    this.hideLabel = 'Hide',
-    String label = 'E-mail',
+    this.showLabel,
+    this.hideLabel,
+    String? label,
     this.style = RegexUIStyle.chips,
   }) : rules = rules ?? RegexModel.emailRules(),
-       decoration = InputDecoration(labelText: label),
+       decoration = InputDecoration(
+         labelText: label ?? RegexLabels.current.emailField,
+       ),
        obscureText = false,
        keyboardType = TextInputType.emailAddress,
        autofillHints = const [AutofillHints.email],
@@ -132,12 +138,14 @@ class RegexTextField extends StatefulWidget {
     this.validate,
     this.onSubmitted,
     this.visibility = RegexUIVisibility.focus,
-    this.showLabel = 'Show',
-    this.hideLabel = 'Hide',
-    String label = 'User name',
+    this.showLabel,
+    this.hideLabel,
+    String? label,
     this.style = RegexUIStyle.chips,
   }) : rules = rules ?? RegexModel.userNameRules(),
-       decoration = InputDecoration(labelText: label),
+       decoration = InputDecoration(
+         labelText: label ?? RegexLabels.current.userNameField,
+       ),
        obscureText = false,
        keyboardType = TextInputType.text,
        autofillHints = const [AutofillHints.username],
@@ -214,7 +222,9 @@ class _RegexTextFieldState extends State<RegexTextField> {
 
   Widget _buildEye() {
     return IconButton(
-      tooltip: _hidden ? widget.showLabel : widget.hideLabel,
+      tooltip: _hidden
+          ? widget.showLabel ?? RegexLabels.current.show
+          : widget.hideLabel ?? RegexLabels.current.hide,
       icon: Icon(
         _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
       ),

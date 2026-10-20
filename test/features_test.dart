@@ -154,6 +154,39 @@ void main() {
     });
   });
 
+  group('RegexLabels', () {
+    tearDown(() => RegexLabels.current = const RegexLabels());
+
+    test('one language for every auto title, partial overrides', () {
+      RegexLabels.current = RegexLabels(
+        minLength: (n) => '$n文字以上',
+        chars: const {RegexChar.whitespace: 'スペース'},
+        only: (list) => '$listのみ',
+        join: (words) => words.join('、'),
+      );
+      expect(RegexModel.minLength(3).title, '3文字以上');
+      expect(
+        RegexModel.lettersOnly(allowList: [RegexChar.whitespace]).title,
+        'letters、スペースのみ',
+      );
+      expect(RegexModel.digit().title, 'One number');
+      expect(RegexModel.minLength(3, title: '最低3').title, '最低3');
+    });
+
+    testWidgets('widgets use the labels', (tester) async {
+      RegexLabels.current = const RegexLabels(
+        show: '表示',
+        passwordField: 'パスワード',
+        strength: ['1', '2', '3', '4', '5'],
+      );
+      await tester.pumpWidget(
+        MaterialApp(home: Scaffold(body: RegexTextField.password())),
+      );
+      expect(find.text('パスワード'), findsOneWidget);
+      expect(find.byTooltip('表示'), findsOneWidget);
+    });
+  });
+
   test('ready rule lists', () {
     bool all(List<RegexModel> rules, String v) =>
         rules.every((r) => r.matches(v));
