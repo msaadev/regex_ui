@@ -1,5 +1,13 @@
 ## 1.1.0
 
+* **`RegexTextField`**: field + rules + strength bar + show / hide button in one widget; makes its own
+  controller and focus node when you pass none.
+* **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
+  `Form.validate()` checks the same rules.
+* **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),
+  `noRepeating`, `phone`, `url`.
+* **Real password strength**: `passwordStrength(value)` → 0–4; `strengthMode: RegexUIStrength.password`
+  drives the bar with it, and `strengthLabels` shows Very weak … Strong next to it.
 * New logo; README polish.
 
 ## 1.0.0

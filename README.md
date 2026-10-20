@@ -14,10 +14,16 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
 
 ## Features of this Flutter password validator
 
-- **Ready rules**: `minLength`, `uppercase`, `lowercase`, `digit`, `special`, `noSpaces`, `email`
+- **One widget, no boilerplate**: `RegexTextField` is the field, the rules, the strength bar and the
+  show / hide password button together; it makes its own controller and focus node.
+- **Works with `Form`**: `Form.validate()` checks the same rules (`RegexModel.validator(rules)` for your own `TextFormField`).
+- **Ready rules**: `minLength`, `maxLength`, `uppercase`, `lowercase`, `digit`, `special`, `noSpaces`,
+  `noRepeating`, `email`, `phone`, `url`, `sameAs` (repeat password), `notContains` (no user name in the password)
   (letters in any language, e.g. `Ş`, `Ä`, `É`).
+- **Real password strength**: `passwordStrength(value)` scores 0–4 from length, variety, repeats,
+  sequences and common passwords; the bar can show it with labels (Very weak … Strong).
 - **Your own rules**: any `RegExp`, or a `test` function.
-- **Password strength indicator**: a bar that fills and turns green as rules are met.
+- **Password strength indicator**: a bar that fills and turns green as rules are met, or by real strength.
 - **Two styles**: a checklist (`RegexUIStyle.list`) or compact chips (`RegexUIStyle.chips`).
 - **Show on focus or always**: pass a `FocusNode` to show the rules only while typing.
 - **Accessible**: screen readers hear "One number: met"; labels are translatable.
@@ -32,9 +38,40 @@ dependencies:
 
 ## Usage: password validation in Flutter
 
+The shortest way: one widget.
+
 ```dart
 import 'package:regex_ui/regex_ui.dart';
 
+Form(
+  key: formKey,
+  child: Column(children: [
+    RegexTextField(
+      controller: password,
+      obscureText: true, // adds the show / hide button
+      decoration: const InputDecoration(labelText: 'Password'),
+      showStrength: true,
+      strengthMode: RegexUIStrength.password, // Very weak … Strong
+      rules: [
+        RegexModel.minLength(8),
+        RegexModel.digit(),
+        RegexModel.noRepeating(),
+        RegexModel.notContains(() => userName.text),
+      ],
+    ),
+    RegexTextField(
+      obscureText: true,
+      decoration: const InputDecoration(labelText: 'Repeat password'),
+      rules: [RegexModel.sameAs(password)],
+    ),
+  ]),
+)
+// formKey.currentState!.validate() checks the same rules.
+```
+
+With your own field:
+
+```dart
 TextField(controller: controller, focusNode: focusNode, obscureText: true),
 RegexUI(
   controller: controller,
@@ -85,6 +122,8 @@ RegexUI(
 |---|---|---|
 | `style` | `list` | `list` or `chips` |
 | `showStrength` | `false` | strength bar above the rules |
+| `strengthMode` | `rules` | `rules` (share of met rules) or `password` (`passwordStrength`, 0–4) |
+| `strengthLabels` | 5 English labels in `password` mode | words next to the bar, weakest first |
 | `visibility` | `focus` with a `focusNode`, else `always` | |
 | `iconTrue` / `iconFalse` | check / close | per rule too |
 | `iconColorTrue` / `iconColorFalse` | green / outline | per rule: `colorTrue` / `colorFalse` |

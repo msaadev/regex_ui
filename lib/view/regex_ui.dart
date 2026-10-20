@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/password_strength.dart';
 import '../models/regex_model.dart';
 
 /// When the rule list is shown.
@@ -18,6 +19,16 @@ enum RegexUIStyle {
 
   /// Rules as wrapping chips; compact, good under wide fields.
   chips,
+}
+
+/// What the strength bar measures.
+enum RegexUIStrength {
+  /// Share of the rules that are met.
+  rules,
+
+  /// Real password strength from [passwordStrength] (0–4), independent of the
+  /// rules.
+  password,
 }
 
 /// Live checklist for a text field: shows which rules (password, user name,
@@ -60,8 +71,16 @@ class RegexUI extends StatefulWidget {
   /// List or chips.
   final RegexUIStyle style;
 
-  /// Shows a bar that fills as more rules are met.
+  /// Shows a strength bar above the rules.
   final bool showStrength;
+
+  /// What the bar measures: met rules or real password strength.
+  final RegexUIStrength strengthMode;
+
+  /// Words shown next to the bar, weakest first, e.g. Weak / Fair / Strong.
+  /// Defaults to five English labels in [RegexUIStrength.password] mode and
+  /// none in [RegexUIStrength.rules] mode.
+  final List<String>? strengthLabels;
 
   /// Screen reader words for a met / not met rule.
   final String metLabel, unmetLabel;
@@ -86,6 +105,8 @@ class RegexUI extends StatefulWidget {
     this.visibility,
     this.style = RegexUIStyle.list,
     this.showStrength = false,
+    this.strengthMode = RegexUIStrength.rules,
+    this.strengthLabels,
     this.metLabel = 'met',
     this.unmetLabel = 'not met',
   });
@@ -168,8 +189,15 @@ class _RegexUIState extends State<RegexUI> {
   }
 
   Widget _buildStrength(BuildContext context, List<bool> results) {
-    final met = results.where((ok) => ok).length;
-    final ratio = results.isEmpty ? 0.0 : met / results.length;
+    final (:ratio, :level) = _strength(results);
+    final labels =
+        widget.strengthLabels ??
+        (widget.strengthMode == RegexUIStrength.password
+            ? const ['Very weak', 'Weak', 'Fair', 'Good', 'Strong']
+            : null);
+    final label = labels == null || labels.isEmpty
+        ? null
+        : labels[(level * (labels.length - 1)).round()];
     final color = Color.lerp(
       Theme.of(context).colorScheme.error,
       _metColor(context, null),
@@ -178,16 +206,32 @@ class _RegexUIState extends State<RegexUI> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
       child: Semantics(
-        label: '$met / ${results.length}',
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(end: ratio),
-          duration: const Duration(milliseconds: 300),
-          builder: (_, value, _) => LinearProgressIndicator(
-            value: value,
-            minHeight: 6,
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
+        label: label ?? '${(ratio * 100).round()}%',
+        excludeSemantics: true,
+        child: Row(
+          children: [
+            Expanded(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: ratio),
+                duration: const Duration(milliseconds: 300),
+                builder: (_, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            if (label != null) ...[
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: color),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -294,6 +338,20 @@ class _RegexUIState extends State<RegexUI> {
       style: base.copyWith(color: color),
       child: Text(rule.title),
     );
+  }
+
+  // ratio fills the bar; level (0–1) picks the label.
+  ({double ratio, double level}) _strength(List<bool> results) {
+    if (widget.strengthMode == RegexUIStrength.password) {
+      final text = widget.controller.text;
+      if (text.isEmpty) return (ratio: 0, level: 0);
+      final score = passwordStrength(text);
+      return (ratio: (score + 1) / 5, level: score / 4);
+    }
+    final ratio = results.isEmpty
+        ? 0.0
+        : results.where((ok) => ok).length / results.length;
+    return (ratio: ratio, level: ratio);
   }
 
   Color _metColor(BuildContext context, RegexModel? rule) =>

@@ -46,17 +46,15 @@ class _SignUpPageState extends State<SignUpPage> {
   final _userName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _passwordFocus = FocusNode();
   final _valid = <String, bool>{};
 
-  bool get _canSubmit => _valid.length == 3 && _valid.values.every((v) => v);
+  bool get _canSubmit => _valid.length == 4 && _valid.values.every((v) => v);
 
   @override
   void dispose() {
     _userName.dispose();
     _email.dispose();
     _password.dispose();
-    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -102,19 +100,35 @@ class _SignUpPageState extends State<SignUpPage> {
                 regexList: [RegexModel.email()],
               ),
               const SizedBox(height: 24),
-              _buildField(_password, 'Password', focusNode: _passwordFocus),
-              RegexUI(
+              RegexTextField(
                 controller: _password,
-                focusNode: _passwordFocus,
+                obscureText: true,
                 showStrength: true,
+                strengthMode: RegexUIStrength.password,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
                 validate: (ok) => _setValid('password', ok),
-                regexList: [
+                rules: [
                   RegexModel.minLength(8),
                   RegexModel.uppercase(),
                   RegexModel.lowercase(),
                   RegexModel.digit(),
                   RegexModel.special(),
+                  RegexModel.noRepeating(),
+                  RegexModel.notContains(() => _userName.text),
                 ],
+              ),
+              const SizedBox(height: 24),
+              RegexTextField(
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Repeat password',
+                  border: OutlineInputBorder(),
+                ),
+                validate: (ok) => _setValid('repeat', ok),
+                rules: [RegexModel.sameAs(_password)],
               ),
               const SizedBox(height: 32),
               FilledButton(
@@ -129,15 +143,9 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildField(
-    TextEditingController controller,
-    String label, {
-    FocusNode? focusNode,
-  }) {
+  Widget _buildField(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      focusNode: focusNode,
-      obscureText: focusNode != null,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

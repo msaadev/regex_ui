@@ -72,6 +72,79 @@ class RegexModel {
   factory RegexModel.email({String title = 'Valid e-mail address'}) =>
       RegexModel(title: title, regExp: RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$'));
 
+  /// At most [length] characters.
+  factory RegexModel.maxLength(int length, {String? title}) => RegexModel(
+    title: title ?? 'At most $length characters',
+    test: (value) => value.length <= length,
+  );
+
+  /// Equals the text of [other], e.g. "repeat password".
+  factory RegexModel.sameAs(
+    TextEditingController other, {
+    String title = 'Passwords match',
+  }) => RegexModel(
+    title: title,
+    test: (value) => value.isNotEmpty && value == other.text,
+  );
+
+  /// Does not contain [text] (case-insensitive), e.g. the user name:
+  /// `RegexModel.notContains(() => userName.text)`.
+  factory RegexModel.notContains(
+    String Function() text, {
+    String title = 'Does not contain your name',
+  }) => RegexModel(
+    title: title,
+    test: (value) {
+      final part = text().trim().toLowerCase();
+      return value.isNotEmpty &&
+          (part.isEmpty || !value.toLowerCase().contains(part));
+    },
+  );
+
+  /// No character [count] or more times in a row ("aaa" for 3).
+  factory RegexModel.noRepeating({int count = 3, String? title}) {
+    assert(count >= 2, 'count must be at least 2');
+    final repeat = RegExp('(.)\\1{${count - 1}}');
+    return RegexModel(
+      title: title ?? 'No character $count times in a row',
+      test: (value) => value.isNotEmpty && !repeat.hasMatch(value),
+    );
+  }
+
+  /// Looks like a phone number: optional +, 7–15 digits, spaces, dashes,
+  /// dots or parentheses.
+  factory RegexModel.phone({String title = 'Valid phone number'}) => RegexModel(
+    title: title,
+    test: (value) {
+      if (!RegExp(r'^\+?[\d\s\-().]+$').hasMatch(value.trim())) {
+        return false;
+      }
+      final digits = value.replaceAll(RegExp(r'\D'), '').length;
+      return digits >= 7 && digits <= 15;
+    },
+  );
+
+  /// An http or https address with a domain, e.g. https://monsware.com.
+  factory RegexModel.url({String title = 'Valid web address'}) => RegexModel(
+    title: title,
+    test: (value) {
+      final uri = Uri.tryParse(value.trim());
+      return uri != null &&
+          (uri.scheme == 'http' || uri.scheme == 'https') &&
+          uri.host.contains('.');
+    },
+  );
+
   /// Whether [value] meets this rule.
   bool matches(String value) => test?.call(value) ?? regExp!.hasMatch(value);
+
+  /// A `TextFormField.validator` that returns the first unmet rule's title,
+  /// so `Form.validate()` checks the same rules as the checklist.
+  static String? Function(String?) validator(List<RegexModel> rules) =>
+      (value) {
+        for (final rule in rules) {
+          if (!rule.matches(value ?? '')) return rule.title;
+        }
+        return null;
+      };
 }
