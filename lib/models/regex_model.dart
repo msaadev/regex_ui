@@ -194,6 +194,12 @@ class RegexModel {
         : value.startsWith(text),
   );
 
+  /// Does not start with [text], e.g. `notStartsWith('0')` for an ID number.
+  factory RegexModel.notStartsWith(String text, {String? title}) => RegexModel(
+    title: title ?? RegexLabels.current.notStartsWith(text),
+    test: (value) => !value.startsWith(text),
+  );
+
   /// Ends with [text], e.g. `endsWith('@company.com')`.
   factory RegexModel.endsWith(
     String text, {
@@ -243,16 +249,32 @@ class RegexModel {
         test: (value) => value == other.text,
       );
 
-  /// Does not contain [text] (case-insensitive), e.g. the user name:
-  /// `RegexModel.notContains(() => userName.text)`.
+  /// Does not contain any word of [text] (3+ letters), ignoring case and
+  /// accents: with the name "Ali-Can Yılmaz", "yilmaz123" fails.
+  /// `RegexModel.notContains(() => fullName.text)`.
   factory RegexModel.notContains(String Function() text, {String? title}) =>
       RegexModel(
         title: title ?? RegexLabels.current.notContains,
         test: (value) {
-          final part = text().trim().toLowerCase();
-          return (part.isEmpty || !value.toLowerCase().contains(part));
+          final plain = _fold(value);
+          return !_fold(text())
+              .split(RegExp(r'[^\p{L}\p{N}]+', unicode: true))
+              .any((word) => word.length >= 3 && plain.contains(word));
         },
       );
+
+  // shortcut: folds common Latin accents only, enough for names in passwords.
+  static String _fold(String text) {
+    const from = 'àáâãäåçćèéêëìíîïıñòóôõöşśùúûüğýÿž';
+    const to = 'aaaaaacceeeeiiiiinooooossuuuugyyz';
+    final lower = text.toLowerCase();
+    return String.fromCharCodes(
+      lower.runes.map((r) {
+        final i = from.runes.toList().indexOf(r);
+        return i < 0 ? r : to.codeUnitAt(i);
+      }),
+    ).replaceAll('i̇', 'i');
+  }
 
   /// No character [count] or more times in a row ("aaa" for 3).
   factory RegexModel.noRepeating({int count = 3, String? title}) {
@@ -319,6 +341,7 @@ class RegexModel {
   /// so `Form.validate()` checks the same rules as the checklist.
   static String? Function(String?) validator(List<RegexModel> rules) =>
       (value) {
+        if ((value ?? '').isEmpty) return RegexLabels.current.required;
         for (final rule in rules) {
           if (!rule.matches(value ?? '')) return rule.title;
         }

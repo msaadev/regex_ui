@@ -5,7 +5,7 @@
 * **One-line fields**: `RegexTextField.password()`, `.email()`, `.userName()` with ready rules,
   keyboard type and autofill; ready rule lists `RegexModel.passwordRules()`, `userNameRules()`, `emailRules()`.
 * **No regex needed**: plain-word rules `lengthBetween`, `exactLength`, `lettersOnly`, `digitsOnly`,
-  `lettersAndDigits` (with `allow:` for extra characters, escaped for you), `startsWith`, `endsWith`,
+  `lettersAndDigits` (with `allow:` for extra characters, escaped for you), `startsWith`, `notStartsWith`, `endsWith`,
   `contains`, and `count:` on `uppercase`, `lowercase`, `digit`, `special`. README "I want… / Write" table.
 * **`RegexChar` groups**: pick characters from a list instead of writing them:
   `RegexModel.allowOnly([...])`, `RegexModel.notAllowed([...])`, and `allowList:` on `lettersOnly`,
@@ -14,7 +14,10 @@
   screen reader words, strength words, Show / Hide, field labels). Set your language once; pass only
   what you change. Ready languages: `RegexLabels.en`, `tr`, `de`, `es`, `fr`, `it`, `pt`, `ja`,
   `RegexLabels.forLanguage(code)`, and `copyWith` to change a few words. `title:` still changes a single rule.
-* **Form support**: `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
+* `notContains` checks every word of the source (3+ letters) and ignores accents, so the name
+  "Ali-Can Yılmaz" blocks "yilmaz123". `sameAs` reads "Passwords must match".
+* **Form support**: an empty field shows "Required" (`RegexLabels.required`), not the first rule;
+  `RegexModel.validator(rules)` for `TextFormField`; `RegexTextField` uses it, so
   `Form.validate()` checks the same rules.
 * **New rules**: `maxLength`, `sameAs` (repeat password), `notContains` (e.g. no user name),
   `noRepeating`, `phone`, `url`.

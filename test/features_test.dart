@@ -27,6 +27,15 @@ void main() {
       expect(RegexModel.sameAs(TextEditingController()).matches(''), isFalse);
     });
 
+    test('notContains checks each name word, ignoring case and accents', () {
+      final rule = RegexModel.notContains(() => 'Ali-Can Yılmaz');
+      expect(rule.matches('yilmaz12345'), isFalse);
+      expect(rule.matches('xxCANxx'), isFalse);
+      expect(rule.matches('İSTANBUL34'), isTrue);
+      expect(rule.matches('guvenli2sifre9'), isTrue);
+      expect(RegexModel.notContains(() => 'İpek').matches('ipek1234'), isFalse);
+    });
+
     test('notContains ignores case and an empty source', () {
       var name = 'Samil';
       final rule = RegexModel.notContains(() => name);
@@ -59,7 +68,8 @@ void main() {
         RegexModel.minLength(4),
         RegexModel.digit(),
       ]);
-      expect(validate(null), 'At least 4 characters');
+      expect(validate(null), 'Required');
+      expect(validate('ab'), 'At least 4 characters');
       expect(validate('abcd'), 'One number');
       expect(validate('abc1'), isNull);
     });
@@ -151,6 +161,8 @@ void main() {
         isTrue,
       );
       expect(RegexModel.contains('.').matches('ab'), isFalse);
+      expect(RegexModel.notStartsWith('0').matches('0123'), isFalse);
+      expect(RegexModel.notStartsWith('0').matches('1230'), isTrue);
     });
   });
 
@@ -160,6 +172,7 @@ void main() {
     test('ready languages, forLanguage and copyWith', () {
       RegexLabels.current = RegexLabels.tr;
       expect(RegexModel.minLength(8).title, 'En az 8 karakter');
+      expect(RegexModel.notStartsWith('0').title, '"0" ile başlamasın');
       expect(
         RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]).title,
         'Sadece harfler, rakamlar ve _',
@@ -298,7 +311,7 @@ void main() {
 
     expect(form.currentState!.validate(), isFalse);
     await tester.pump();
-    expect(find.text('At least 8 characters'), findsNWidgets(2));
+    expect(find.text('Required'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField), 'correct horse battery');
     await tester.pumpAndSettle();

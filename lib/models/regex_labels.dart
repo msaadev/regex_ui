@@ -63,6 +63,7 @@ class RegexLabels {
   final String Function(int count) special;
   final String Function(int count) noRepeating;
   final String Function(String text) startsWith;
+  final String Function(String text) notStartsWith;
   final String Function(String text) endsWith;
   final String Function(String text) contains;
 
@@ -87,6 +88,9 @@ class RegexLabels {
   final String phone;
   final String url;
   final String sameAs;
+
+  /// Form error of an empty field (the checklist shows the rules instead).
+  final String required;
   final String notContains;
 
   /// Screen reader words for a met / not met rule.
@@ -113,6 +117,7 @@ class RegexLabels {
     this.special = _special,
     this.noRepeating = _noRepeating,
     this.startsWith = _startsWith,
+    this.notStartsWith = _notStartsWith,
     this.endsWith = _endsWith,
     this.contains = _contains,
     this.only = _only,
@@ -124,7 +129,8 @@ class RegexLabels {
     this.email = 'Valid e-mail address',
     this.phone = 'Valid phone number',
     this.url = 'Valid web address',
-    this.sameAs = 'Passwords match',
+    this.sameAs = 'Passwords must match',
+    this.required = 'Required',
     this.notContains = 'Does not contain your name',
     this.met = 'met',
     this.unmet = 'not met',
@@ -148,6 +154,7 @@ class RegexLabels {
     String Function(int count)? special,
     String Function(int count)? noRepeating,
     String Function(String text)? startsWith,
+    String Function(String text)? notStartsWith,
     String Function(String text)? endsWith,
     String Function(String text)? contains,
     String Function(String list)? only,
@@ -160,6 +167,7 @@ class RegexLabels {
     String? phone,
     String? url,
     String? sameAs,
+    String? required,
     String? notContains,
     String? met,
     String? unmet,
@@ -180,6 +188,7 @@ class RegexLabels {
     special: special ?? this.special,
     noRepeating: noRepeating ?? this.noRepeating,
     startsWith: startsWith ?? this.startsWith,
+    notStartsWith: notStartsWith ?? this.notStartsWith,
     endsWith: endsWith ?? this.endsWith,
     contains: contains ?? this.contains,
     only: only ?? this.only,
@@ -192,6 +201,7 @@ class RegexLabels {
     phone: phone ?? this.phone,
     url: url ?? this.url,
     sameAs: sameAs ?? this.sameAs,
+    required: required ?? this.required,
     notContains: notContains ?? this.notContains,
     met: met ?? this.met,
     unmet: unmet ?? this.unmet,
@@ -219,6 +229,7 @@ class RegexLabels {
       n == 1 ? 'One special character' : 'At least $n special characters';
   static String _noRepeating(int n) => 'No character $n times in a row';
   static String _startsWith(String text) => 'Starts with "$text"';
+  static String _notStartsWith(String text) => 'Does not start with "$text"';
   static String _endsWith(String text) => 'Ends with "$text"';
   static String _contains(String text) => 'Contains "$text"';
   static String _only(String list) => 'Only $list';

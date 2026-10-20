@@ -129,6 +129,7 @@ own title too.
 | no spaces | `RegexModel.noSpaces()` |
 | no "aaa" | `RegexModel.noRepeating()` |
 | starts with "TR" | `RegexModel.startsWith('TR')` |
+| does not start with "0" | `RegexModel.notStartsWith('0')` |
 | ends with "@company.com" | `RegexModel.endsWith('@company.com')` |
 | contains "@" | `RegexModel.contains('@')` |
 | same as the password field | `RegexModel.sameAs(passwordController)` |

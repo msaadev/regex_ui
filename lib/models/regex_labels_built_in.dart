@@ -16,6 +16,7 @@ String _trSpecial(int n) =>
     n == 1 ? 'Bir özel karakter' : 'En az $n özel karakter';
 String _trRepeat(int n) => 'Aynı karakter art arda $n kez olmasın';
 String _trStarts(String t) => '"$t" ile başlasın';
+String _trNotStarts(String t) => '"$t" ile başlamasın';
 String _trEnds(String t) => '"$t" ile bitsin';
 String _trContains(String t) => '"$t" içersin';
 String _trOnly(String l) => 'Sadece $l';
@@ -33,6 +34,7 @@ const _tr = RegexLabels(
   special: _trSpecial,
   noRepeating: _trRepeat,
   startsWith: _trStarts,
+  notStartsWith: _trNotStarts,
   endsWith: _trEnds,
   contains: _trContains,
   only: _trOnly,
@@ -52,7 +54,8 @@ const _tr = RegexLabels(
   email: 'Geçerli e-posta adresi',
   phone: 'Geçerli telefon numarası',
   url: 'Geçerli web adresi',
-  sameAs: 'Şifreler aynı',
+  sameAs: 'Şifreler aynı olmalı',
+  required: 'Bu alan zorunlu',
   notContains: 'Adınızı içermesin',
   met: 'tamam',
   unmet: 'eksik',
@@ -78,6 +81,7 @@ String _deSpecial(int n) =>
     n == 1 ? 'Ein Sonderzeichen' : 'Mindestens $n Sonderzeichen';
 String _deRepeat(int n) => 'Kein Zeichen $n-mal hintereinander';
 String _deStarts(String t) => 'Beginnt mit „$t“';
+String _deNotStarts(String t) => 'Beginnt nicht mit „$t“';
 String _deEnds(String t) => 'Endet mit „$t“';
 String _deContains(String t) => 'Enthält „$t“';
 String _deOnly(String l) => 'Nur $l';
@@ -95,6 +99,7 @@ const _de = RegexLabels(
   special: _deSpecial,
   noRepeating: _deRepeat,
   startsWith: _deStarts,
+  notStartsWith: _deNotStarts,
   endsWith: _deEnds,
   contains: _deContains,
   only: _deOnly,
@@ -114,7 +119,8 @@ const _de = RegexLabels(
   email: 'Gültige E-Mail-Adresse',
   phone: 'Gültige Telefonnummer',
   url: 'Gültige Webadresse',
-  sameAs: 'Passwörter stimmen überein',
+  sameAs: 'Passwörter müssen übereinstimmen',
+  required: 'Pflichtfeld',
   notContains: 'Enthält nicht deinen Namen',
   met: 'erfüllt',
   unmet: 'nicht erfüllt',
@@ -140,6 +146,7 @@ String _esSpecial(int n) =>
     n == 1 ? 'Un carácter especial' : 'Al menos $n caracteres especiales';
 String _esRepeat(int n) => 'Ningún carácter $n veces seguidas';
 String _esStarts(String t) => 'Empieza por "$t"';
+String _esNotStarts(String t) => 'No empieza por "$t"';
 String _esEnds(String t) => 'Termina en "$t"';
 String _esContains(String t) => 'Contiene "$t"';
 String _esOnly(String l) => 'Solo $l';
@@ -157,6 +164,7 @@ const _es = RegexLabels(
   special: _esSpecial,
   noRepeating: _esRepeat,
   startsWith: _esStarts,
+  notStartsWith: _esNotStarts,
   endsWith: _esEnds,
   contains: _esContains,
   only: _esOnly,
@@ -176,7 +184,8 @@ const _es = RegexLabels(
   email: 'Correo electrónico válido',
   phone: 'Número de teléfono válido',
   url: 'Dirección web válida',
-  sameAs: 'Las contraseñas coinciden',
+  sameAs: 'Las contraseñas deben coincidir',
+  required: 'Campo obligatorio',
   notContains: 'No contiene tu nombre',
   met: 'cumplido',
   unmet: 'no cumplido',
@@ -200,6 +209,7 @@ String _frSpecial(int n) =>
     n == 1 ? 'Un caractère spécial' : 'Au moins $n caractères spéciaux';
 String _frRepeat(int n) => 'Aucun caractère $n fois de suite';
 String _frStarts(String t) => 'Commence par « $t »';
+String _frNotStarts(String t) => 'Ne commence pas par « $t »';
 String _frEnds(String t) => 'Se termine par « $t »';
 String _frContains(String t) => 'Contient « $t »';
 String _frOnly(String l) => 'Uniquement $l';
@@ -217,6 +227,7 @@ const _fr = RegexLabels(
   special: _frSpecial,
   noRepeating: _frRepeat,
   startsWith: _frStarts,
+  notStartsWith: _frNotStarts,
   endsWith: _frEnds,
   contains: _frContains,
   only: _frOnly,
@@ -236,7 +247,8 @@ const _fr = RegexLabels(
   email: 'Adresse e-mail valide',
   phone: 'Numéro de téléphone valide',
   url: 'Adresse web valide',
-  sameAs: 'Les mots de passe correspondent',
+  sameAs: 'Les mots de passe doivent correspondre',
+  required: 'Champ obligatoire',
   notContains: 'Ne contient pas votre nom',
   met: 'respecté',
   unmet: 'non respecté',
@@ -262,6 +274,7 @@ String _itSpecial(int n) =>
     n == 1 ? 'Un carattere speciale' : 'Almeno $n caratteri speciali';
 String _itRepeat(int n) => 'Nessun carattere ripetuto $n volte di fila';
 String _itStarts(String t) => 'Inizia con "$t"';
+String _itNotStarts(String t) => 'Non inizia con "$t"';
 String _itEnds(String t) => 'Finisce con "$t"';
 String _itContains(String t) => 'Contiene "$t"';
 String _itOnly(String l) => 'Solo $l';
@@ -279,6 +292,7 @@ const _it = RegexLabels(
   special: _itSpecial,
   noRepeating: _itRepeat,
   startsWith: _itStarts,
+  notStartsWith: _itNotStarts,
   endsWith: _itEnds,
   contains: _itContains,
   only: _itOnly,
@@ -298,7 +312,8 @@ const _it = RegexLabels(
   email: 'Indirizzo e-mail valido',
   phone: 'Numero di telefono valido',
   url: 'Indirizzo web valido',
-  sameAs: 'Le password coincidono',
+  sameAs: 'Le password devono coincidere',
+  required: 'Campo obbligatorio',
   notContains: 'Non contiene il tuo nome',
   met: 'soddisfatto',
   unmet: 'non soddisfatto',
@@ -324,6 +339,7 @@ String _ptSpecial(int n) =>
     n == 1 ? 'Um caractere especial' : 'Pelo menos $n caracteres especiais';
 String _ptRepeat(int n) => 'Nenhum caractere $n vezes seguidas';
 String _ptStarts(String t) => 'Começa com "$t"';
+String _ptNotStarts(String t) => 'Não começa com "$t"';
 String _ptEnds(String t) => 'Termina com "$t"';
 String _ptContains(String t) => 'Contém "$t"';
 String _ptOnly(String l) => 'Apenas $l';
@@ -341,6 +357,7 @@ const _pt = RegexLabels(
   special: _ptSpecial,
   noRepeating: _ptRepeat,
   startsWith: _ptStarts,
+  notStartsWith: _ptNotStarts,
   endsWith: _ptEnds,
   contains: _ptContains,
   only: _ptOnly,
@@ -360,7 +377,8 @@ const _pt = RegexLabels(
   email: 'E-mail válido',
   phone: 'Número de telefone válido',
   url: 'Endereço web válido',
-  sameAs: 'As senhas coincidem',
+  sameAs: 'As senhas devem coincidir',
+  required: 'Campo obrigatório',
   notContains: 'Não contém seu nome',
   met: 'atendido',
   unmet: 'não atendido',
@@ -383,6 +401,7 @@ String _jaDigit(int n) => n == 1 ? '数字を1つ' : '数字を$nつ以上';
 String _jaSpecial(int n) => n == 1 ? '記号を1つ' : '記号を$nつ以上';
 String _jaRepeat(int n) => '同じ文字を$n回続けない';
 String _jaStarts(String t) => '「$t」で始まる';
+String _jaNotStarts(String t) => '「$t」で始まらない';
 String _jaEnds(String t) => '「$t」で終わる';
 String _jaContains(String t) => '「$t」を含む';
 String _jaOnly(String l) => '$lのみ';
@@ -400,6 +419,7 @@ const _ja = RegexLabels(
   special: _jaSpecial,
   noRepeating: _jaRepeat,
   startsWith: _jaStarts,
+  notStartsWith: _jaNotStarts,
   endsWith: _jaEnds,
   contains: _jaContains,
   only: _jaOnly,
@@ -419,7 +439,8 @@ const _ja = RegexLabels(
   email: '有効なメールアドレス',
   phone: '有効な電話番号',
   url: '有効なURL',
-  sameAs: 'パスワードが一致',
+  sameAs: 'パスワードが一致すること',
+  required: '必須項目です',
   notContains: '名前を含まない',
   met: '達成',
   unmet: '未達成',
