@@ -1,5 +1,7 @@
 ## 1.1.1
 
+* Every public member is documented (`public_member_api_docs` is on), so hovering any field or
+  method in your IDE says what it does.
 * Length rules (`minLength`, `maxLength`, `lengthBetween`, `exactLength`) count characters, so an
   emoji counts as one, not two.
 * `RegexUI.validate` also reports the starting state, so pre-filled text can enable a button.

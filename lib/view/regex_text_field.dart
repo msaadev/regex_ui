@@ -23,9 +23,13 @@ class RegexTextField extends StatefulWidget {
   /// Hides the text and adds a show / hide button (passwords).
   final bool obscureText;
 
-  /// Keyboard, action and autofill of the field.
+  /// Keyboard type of the field.
   final TextInputType? keyboardType;
+
+  /// Action button of the keyboard (next, done).
   final TextInputAction? textInputAction;
+
+  /// Autofill hints, e.g. `AutofillHints.password`.
   final Iterable<String>? autofillHints;
 
   /// Called on every change with whether all rules are met.

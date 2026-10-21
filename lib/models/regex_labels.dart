@@ -27,13 +27,28 @@ class RegexLabels {
   /// The labels used by every rule and widget. English by default.
   static RegexLabels current = en;
 
+  /// English labels (the default).
   static const en = RegexLabels();
+
+  /// Turkish labels.
   static const tr = _tr;
+
+  /// German labels.
   static const de = _de;
+
+  /// Spanish labels.
   static const es = _es;
+
+  /// French labels.
   static const fr = _fr;
+
+  /// Italian labels.
   static const it = _it;
+
+  /// Portuguese labels.
   static const pt = _pt;
+
+  /// Japanese labels.
   static const ja = _ja;
 
   /// Ready languages by language code.
@@ -53,18 +68,43 @@ class RegexLabels {
   static RegexLabels forLanguage(String languageCode) =>
       builtIn[languageCode.split(RegExp('[-_]')).first.toLowerCase()] ?? en;
 
+  /// Title of the minimum length rule, e.g. "At least 8 characters".
   final String Function(int length) minLength;
+
+  /// Title of the maximum length rule, e.g. "At most 20 characters".
   final String Function(int length) maxLength;
+
+  /// Title of the length range rule, e.g. "8 to 20 characters".
   final String Function(int min, int max) lengthBetween;
+
+  /// Title of the exact length rule, e.g. "Exactly 6 characters".
   final String Function(int length) exactLength;
+
+  /// Title of the uppercase letter rule for [count] letters.
   final String Function(int count) uppercase;
+
+  /// Title of the lowercase letter rule for [count] letters.
   final String Function(int count) lowercase;
+
+  /// Title of the number rule for [count] digits.
   final String Function(int count) digit;
+
+  /// Title of the special character rule for [count] characters.
   final String Function(int count) special;
+
+  /// Title of the "no character repeated more than [count] times in a row" rule.
   final String Function(int count) noRepeating;
+
+  /// Title of the "starts with [text]" rule.
   final String Function(String text) startsWith;
+
+  /// Title of the "doesn't start with [text]" rule.
   final String Function(String text) notStartsWith;
+
+  /// Title of the "ends with [text]" rule.
   final String Function(String text) endsWith;
+
+  /// Title of the "contains [text]" rule.
   final String Function(String text) contains;
 
   /// Title of `allowOnly` and the "only" rules; [list] is built by [join].
@@ -83,15 +123,28 @@ class RegexLabels {
   /// Name of a space passed in `allow:`.
   final String space;
 
+  /// Title of the no-spaces rule.
   final String noSpaces;
+
+  /// Title of the email format rule.
   final String email;
+
+  /// Title of the phone number rule.
   final String phone;
+
+  /// Title of the web address rule.
   final String url;
+
+  /// Title of the IBAN rule.
   final String iban;
+
+  /// Title of the "same as the other field" rule (password repeat).
   final String sameAs;
 
   /// Form error of an empty field (the checklist shows the rules instead).
   final String required;
+
+  /// Title of the "doesn't contain" rule.
   final String notContains;
 
   /// Screen reader words for a met / not met rule.
