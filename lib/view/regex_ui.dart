@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/password_strength.dart';
+import '../models/regex_labels.dart';
 import '../models/regex_model.dart';
+import 'regex_form.dart';
 
 /// When the rule list is shown.
 enum RegexUIVisibility {
@@ -18,6 +21,16 @@ enum RegexUIStyle {
 
   /// Rules as wrapping chips; compact, good under wide fields.
   chips,
+}
+
+/// What the strength bar measures.
+enum RegexUIStrength {
+  /// Share of the rules that are met.
+  rules,
+
+  /// Real password strength from [passwordStrength] (0–4), independent of the
+  /// rules.
+  password,
 }
 
 /// Live checklist for a text field: shows which rules (password, user name,
@@ -60,11 +73,22 @@ class RegexUI extends StatefulWidget {
   /// List or chips.
   final RegexUIStyle style;
 
-  /// Shows a bar that fills as more rules are met.
+  /// Shows a strength bar above the rules.
   final bool showStrength;
 
-  /// Screen reader words for a met / not met rule.
-  final String metLabel, unmetLabel;
+  /// What the bar measures: met rules or real password strength.
+  final RegexUIStrength strengthMode;
+
+  /// Words shown next to the bar, weakest first, e.g. Weak / Fair / Strong.
+  /// Defaults to five English labels in [RegexUIStrength.password] mode and
+  /// none in [RegexUIStrength.rules] mode.
+  final List<String>? strengthLabels;
+
+  /// May be left empty: empty counts as valid for [validate] and [RegexForm].
+  final bool optional;
+
+  /// Screen reader words for a met / not met rule. Default: [RegexLabels].
+  final String? metLabel, unmetLabel;
 
   /// Creates the checklist for [controller].
   const RegexUI({
@@ -86,8 +110,11 @@ class RegexUI extends StatefulWidget {
     this.visibility,
     this.style = RegexUIStyle.list,
     this.showStrength = false,
-    this.metLabel = 'met',
-    this.unmetLabel = 'not met',
+    this.strengthMode = RegexUIStrength.rules,
+    this.strengthLabels,
+    this.optional = false,
+    this.metLabel,
+    this.unmetLabel,
   });
 
   @override
@@ -95,6 +122,8 @@ class RegexUI extends StatefulWidget {
 }
 
 class _RegexUIState extends State<RegexUI> {
+  RegexFormController? _form;
+
   bool get _visible {
     final visibility =
         widget.visibility ??
@@ -110,6 +139,21 @@ class _RegexUIState extends State<RegexUI> {
     super.initState();
     widget.controller.addListener(_onTextChanged);
     widget.focusNode?.addListener(_onFocusChanged);
+    // Report the starting state too, so pre-filled text can enable a button.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.validate?.call(_isValid());
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final form = RegexFormScope.maybeOf(context);
+    if (form == _form) return;
+    _form?.removeListener(_onFormChanged);
+    _form?.leave(this);
+    _form = form?..join(this, _isValid);
+    _form?.addListener(_onFormChanged);
   }
 
   @override
@@ -127,6 +171,8 @@ class _RegexUIState extends State<RegexUI> {
 
   @override
   void dispose() {
+    _form?.removeListener(_onFormChanged);
+    _form?.leave(this);
     widget.controller.removeListener(_onTextChanged);
     widget.focusNode?.removeListener(_onFocusChanged);
     super.dispose();
@@ -168,8 +214,15 @@ class _RegexUIState extends State<RegexUI> {
   }
 
   Widget _buildStrength(BuildContext context, List<bool> results) {
-    final met = results.where((ok) => ok).length;
-    final ratio = results.isEmpty ? 0.0 : met / results.length;
+    final (:ratio, :level) = _strength(results);
+    final labels =
+        widget.strengthLabels ??
+        (widget.strengthMode == RegexUIStrength.password
+            ? RegexLabels.current.strength
+            : null);
+    final label = labels == null || labels.isEmpty
+        ? null
+        : labels[(level * (labels.length - 1)).round()];
     final color = Color.lerp(
       Theme.of(context).colorScheme.error,
       _metColor(context, null),
@@ -178,16 +231,32 @@ class _RegexUIState extends State<RegexUI> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
       child: Semantics(
-        label: '$met / ${results.length}',
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(end: ratio),
-          duration: const Duration(milliseconds: 300),
-          builder: (_, value, _) => LinearProgressIndicator(
-            value: value,
-            minHeight: 6,
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
+        label: label ?? '${(ratio * 100).round()}%',
+        excludeSemantics: true,
+        child: Row(
+          children: [
+            Expanded(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: ratio),
+                duration: const Duration(milliseconds: 300),
+                builder: (_, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            if (label != null) ...[
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: color),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -195,7 +264,7 @@ class _RegexUIState extends State<RegexUI> {
 
   Widget _buildRow(BuildContext context, RegexModel rule, bool met) {
     return Semantics(
-      label: '${rule.title}: ${met ? widget.metLabel : widget.unmetLabel}',
+      label: '${rule.title}: ${_status(met)}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -222,7 +291,7 @@ class _RegexUIState extends State<RegexUI> {
             Semantics(
               label:
                   '${widget.regexList[i].title}: '
-                  '${results[i] ? widget.metLabel : widget.unmetLabel}',
+                  '${_status(results[i])}',
               excludeSemantics: true,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
@@ -296,6 +365,24 @@ class _RegexUIState extends State<RegexUI> {
     );
   }
 
+  String _status(bool met) => met
+      ? widget.metLabel ?? RegexLabels.current.met
+      : widget.unmetLabel ?? RegexLabels.current.unmet;
+
+  // ratio fills the bar; level (0–1) picks the label.
+  ({double ratio, double level}) _strength(List<bool> results) {
+    if (widget.strengthMode == RegexUIStrength.password) {
+      final text = widget.controller.text;
+      if (text.isEmpty) return (ratio: 0, level: 0);
+      final score = passwordStrength(text);
+      return (ratio: (score + 1) / 5, level: score / 4);
+    }
+    final ratio = results.isEmpty
+        ? 0.0
+        : results.where((ok) => ok).length / results.length;
+    return (ratio: ratio, level: ratio);
+  }
+
   Color _metColor(BuildContext context, RegexModel? rule) =>
       rule?.colorTrue ?? widget.iconColorTrue ?? Colors.green.shade600;
 
@@ -304,13 +391,22 @@ class _RegexUIState extends State<RegexUI> {
       widget.iconColorFalse ??
       Theme.of(context).colorScheme.outlineVariant;
 
+  bool _isValid() => RegexModel.allMet(
+    widget.regexList,
+    widget.controller.text,
+    optional: widget.optional,
+  );
+
   void _onTextChanged() {
     if (!mounted) return;
     setState(() {});
-    final valid = widget.regexList.every(
-      (rule) => rule.matches(widget.controller.text),
-    );
-    widget.validate?.call(valid);
+    widget.validate?.call(_isValid());
+    _form?.fieldChanged();
+  }
+
+  // Another field changed: rules like sameAs may have changed too.
+  void _onFormChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onFocusChanged() {

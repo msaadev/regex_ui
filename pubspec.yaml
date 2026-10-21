@@ -1,6 +1,6 @@
 name: regex_ui
 description: Live, animated rule checklist for Flutter text fields. Password and form validation with ready rules, strength bar, list or chip styles.
-version: 1.0.0
+version: 1.1.1
 homepage: https://monsware.com/regex-ui/
 repository: https://github.com/msaadev/regex_ui
 issue_tracker: https://github.com/msaadev/regex_ui/issues

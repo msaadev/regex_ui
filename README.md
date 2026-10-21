@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/msaadev/regex_ui/main/logo/logo.png" width="128" alt="regex_ui logo"></p>
+
 # regex_ui
 
 [![pub package](https://img.shields.io/pub/v/regex_ui.svg)](https://pub.dev/packages/regex_ui)
@@ -12,10 +14,22 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
 
 ## Features of this Flutter password validator
 
-- **Ready rules**: `minLength`, `uppercase`, `lowercase`, `digit`, `special`, `noSpaces`, `email`
+- **One line**: `RegexTextField.password()`, `.email()`, `.userName()` are ready fields with
+  sensible rules, keyboard and autofill.
+- **One widget, no boilerplate**: `RegexTextField` is the field, the rules, the strength bar and the
+  show / hide password button together; it makes its own controller and focus node.
+- **`RegexForm`**: tells you when every field is valid (enable the submit button) and re-checks
+  "repeat password" when the password changes.
+- **Works with `Form`**: `Form.validate()` checks the same rules (`RegexModel.validator(rules)` for your own `TextFormField`).
+- **Ready rules**: `minLength`, `maxLength`, `uppercase`, `lowercase`, `digit`, `special`, `noSpaces`,
+  `noRepeating`, `email`, `phone`, `url`, `sameAs` (repeat password), `notContains` (no user name in the password)
   (letters in any language, e.g. `Ş`, `Ä`, `É`).
-- **Your own rules**: any `RegExp`, or a `test` function.
-- **Password strength indicator**: a bar that fills and turns green as rules are met.
+- **Real password strength**: `passwordStrength(value)` scores 0–4 from length, variety, repeats,
+  sequences and common passwords; the bar can show it with labels (Very weak … Strong).
+- **No regex needed**: rules in plain words (`digitsOnly()`, `allowOnly([RegexChar.letters, RegexChar.whitespace])`,
+  `lengthBetween(3, 20)`, `startsWith('TR')`, `digit(count: 2)`…) with automatic titles.
+- **Your own rules**: any `RegExp`, or a `test` function in plain Dart.
+- **Password strength indicator**: a bar that fills and turns green as rules are met, or by real strength.
 - **Two styles**: a checklist (`RegexUIStyle.list`) or compact chips (`RegexUIStyle.chips`).
 - **Show on focus or always**: pass a `FocusNode` to show the rules only while typing.
 - **Accessible**: screen readers hear "One number: met"; labels are translatable.
@@ -25,14 +39,85 @@ marks, a password strength indicator, list or chip styles. Material 3, dark mode
 
 ```yaml
 dependencies:
-  regex_ui: ^1.0.0
+  regex_ui: ^1.1.0
 ```
 
 ## Usage: password validation in Flutter
 
+One line each: the field, its rules, the strength bar and the show / hide button.
+
 ```dart
 import 'package:regex_ui/regex_ui.dart';
 
+RegexTextField.userName(),
+RegexTextField.email(),
+RegexTextField.password(),                    // 8+ chars, upper, lower, number, special
+RegexTextField.password(minLength: 12, label: 'New password'),
+```
+
+Enable the button only when every field is valid: wrap them in `RegexForm`.
+
+```dart
+RegexForm(
+  onChanged: (ok) => setState(() => canSubmit = ok),
+  child: Column(children: [
+    RegexTextField.email(),
+    RegexTextField.password(controller: password),
+    RegexTextField(rules: [RegexModel.sameAs(password)]), // follows the password
+    FilledButton(onPressed: canSubmit ? submit : null, child: const Text('Sign up')),
+  ]),
+)
+```
+
+A field that may stay empty (a referral code, a second phone): `optional: true`. Empty is fine; once
+something is typed, the rules apply.
+
+```dart
+RegexTextField(optional: true, rules: [RegexModel.exactLength(6)])
+```
+
+Using your own `TextField` with `RegexUI`? It counts in `RegexForm` too. Plain `TextFormField`s
+without rules are not counted (`Form.validate()` still checks them).
+
+No `setState`? Read it where you build the button: `RegexForm.isValidOf(context)`. `RegexForm` is a
+`Form`, so `formKey.currentState!.validate()` (pass `formKey:`) checks the same rules. Pass `rules:` to any of
+them to use your own, or start from the ready lists: `RegexModel.passwordRules()`,
+`RegexModel.userNameRules()`, `RegexModel.emailRules()`.
+
+Full control:
+
+```dart
+import 'package:regex_ui/regex_ui.dart';
+
+Form(
+  key: formKey,
+  child: Column(children: [
+    RegexTextField(
+      controller: password,
+      obscureText: true, // adds the show / hide button
+      decoration: const InputDecoration(labelText: 'Password'),
+      showStrength: true,
+      strengthMode: RegexUIStrength.password, // Very weak … Strong
+      rules: [
+        RegexModel.minLength(8),
+        RegexModel.digit(),
+        RegexModel.noRepeating(),
+        RegexModel.notContains(() => userName.text),
+      ],
+    ),
+    RegexTextField(
+      obscureText: true,
+      decoration: const InputDecoration(labelText: 'Repeat password'),
+      rules: [RegexModel.sameAs(password)],
+    ),
+  ]),
+)
+// formKey.currentState!.validate() checks the same rules.
+```
+
+With your own field:
+
+```dart
 TextField(controller: controller, focusNode: focusNode, obscureText: true),
 RegexUI(
   controller: controller,
@@ -49,6 +134,46 @@ RegexUI(
 )
 ```
 
+## No regex needed
+
+You don't need to know regular expressions. Say what you want in plain words; the rule writes its
+own title too.
+
+| I want… | Write |
+|---|---|
+| at least 8 characters | `RegexModel.minLength(8)` |
+| at most 20 characters | `RegexModel.maxLength(20)` |
+| 3 to 20 characters | `RegexModel.lengthBetween(3, 20)` |
+| exactly 11 characters (ID number, code) | `RegexModel.exactLength(11)` |
+| only numbers | `RegexModel.digitsOnly()` |
+| only letters, spaces and dashes (names) | `RegexModel.lettersOnly(allowList: [RegexChar.whitespace, RegexChar.dash])` |
+| letters, numbers, `_` and `.` (user names) | `RegexModel.lettersAndDigits(allowList: [RegexChar.underscore, RegexChar.dot])` |
+| only the groups I pick | `RegexModel.allowOnly([RegexChar.englishLetters, RegexChar.digits])` |
+| no spaces and no dots | `RegexModel.notAllowed([RegexChar.whitespace, RegexChar.dot])` |
+| at least 2 numbers | `RegexModel.digit(count: 2)` |
+| an uppercase / lowercase letter | `RegexModel.uppercase()` / `RegexModel.lowercase()` |
+| a special character like `!` or `#` | `RegexModel.special()` |
+| no spaces | `RegexModel.noSpaces()` |
+| no "aaa" | `RegexModel.noRepeating()` |
+| starts with "TR" | `RegexModel.startsWith('TR')` |
+| does not start with "0" | `RegexModel.notStartsWith('0')` |
+| ends with "@company.com" | `RegexModel.endsWith('@company.com')` |
+| contains "@" | `RegexModel.contains('@')` |
+| same as the password field | `RegexModel.sameAs(passwordController)` |
+| must not contain the user name | `RegexModel.notContains(() => userName.text)` |
+| an e-mail / phone / web address | `RegexModel.email()` / `.phone()` / `.url()` |
+| a real IBAN (spaces ok, check digits) | `RegexModel.iban()` · only Turkish: `RegexModel.iban(country: 'TR')` |
+| anything else, in plain Dart | `RegexModel(title: 'Not "admin"', test: (v) => v != 'admin')` |
+
+`RegexChar` groups: `letters` (any language), `englishLetters`, `uppercase`, `lowercase`, `digits`,
+`whitespace`, `underscore`, `dash`, `dot`, `at`, `plus`, `comma`, `apostrophe`, `slash`, `special`.
+Type `RegexChar.` and let your editor list them.
+
+For a character that is not in the list, use `allow:` with a plain string, e.g. `allow: '#'`.
+Characters you pass to `allow:`, `startsWith`, `endsWith` and `contains` are used as they are:
+`-`, `.`, `]` or `\` need no escaping. Every rule takes `title:` for your own wording or language.
+Already have a regex from somewhere? `RegexModel(title: '…', regExp: RegExp(r'…'))` still works.
+
 ### User name and e-mail as chips
 
 ```dart
@@ -56,26 +181,55 @@ RegexUI(
   controller: userName,
   style: RegexUIStyle.chips,
   regexList: [
-    RegexModel.minLength(3),
-    RegexModel.noSpaces(),
-    RegexModel(title: 'Letters, numbers, _', regExp: RegExp(r'^\w*$')),
+    RegexModel.lengthBetween(3, 20),
+    RegexModel.lettersAndDigits(allowList: [RegexChar.underscore]),
   ],
 )
 ```
 
-### Custom rule and translations
+### Your language (or your own words)
+
+Ready languages, one line:
 
 ```dart
-RegexUI(
-  controller: controller,
-  metLabel: 'erfüllt',
-  unmetLabel: 'nicht erfüllt',
-  regexList: [
-    RegexModel.minLength(8, title: 'Mindestens 8 Zeichen'),
-    RegexModel(title: 'Nicht "passwort"', test: (v) => v.toLowerCase() != 'passwort'),
-  ],
-)
+RegexLabels.current = RegexLabels.tr;                          // en, tr, de, es, fr, it, pt, ja
+RegexLabels.current = RegexLabels.forLanguage('ja');           // from the device language
+RegexLabels.current = RegexLabels.tr.copyWith(show: 'Aç');     // a ready language, a few words changed
 ```
+
+Your own language: every text regex_ui writes by itself (rule titles, `RegexChar` names, "met / not met", strength
+words, Show / Hide, field labels) comes from `RegexLabels`. Set it once, before the rules are built,
+for example in `main()`. Pass only what you want to change; the rest stays English.
+
+```dart
+RegexLabels.current = RegexLabels(
+  minLength: (n) => '$n文字以上',
+  digit: (n) => n == 1 ? '数字を1つ' : '数字を$nつ以上',
+  only: (list) => '$listのみ',
+  join: (words) => words.join('、'),
+  chars: {
+    RegexChar.letters: '文字',
+    RegexChar.whitespace: 'スペース',
+  },
+  met: '達成',
+  unmet: '未達成',
+  strength: ['とても弱い', '弱い', '普通', '良い', '強い'],
+  show: '表示',
+  hide: '非表示',
+  passwordField: 'パスワード',
+);
+
+RegexModel.lettersOnly(allowList: [RegexChar.whitespace]) // "文字、スペースのみ"
+```
+
+Change the words of just one rule with `title:`:
+
+```dart
+RegexModel.minLength(8, title: 'Mindestens 8 Zeichen')
+RegexModel(title: 'Nicht "passwort"', test: (v) => v.toLowerCase() != 'passwort')
+```
+
+If the user can switch language in the app, set `RegexLabels.current` again and rebuild the page.
 
 ## Options
 
@@ -83,12 +237,14 @@ RegexUI(
 |---|---|---|
 | `style` | `list` | `list` or `chips` |
 | `showStrength` | `false` | strength bar above the rules |
+| `strengthMode` | `rules` | `rules` (share of met rules) or `password` (`passwordStrength`, 0–4) |
+| `strengthLabels` | `RegexLabels.strength` in `password` mode | words next to the bar, weakest first |
 | `visibility` | `focus` with a `focusNode`, else `always` | |
 | `iconTrue` / `iconFalse` | check / close | per rule too |
 | `iconColorTrue` / `iconColorFalse` | green / outline | per rule: `colorTrue` / `colorFalse` |
 | `textColorTrue` / `textColorFalse` / `textStyle` | theme | per rule too |
 | `padding` / `margin` / `boxDecoration` | none | |
-| `metLabel` / `unmetLabel` | "met" / "not met" | screen reader words |
+| `metLabel` / `unmetLabel` | from `RegexLabels` ("met" / "not met") | screen reader words |
 
 ## Upgrading from 0.0.1
 
